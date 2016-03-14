@@ -1,0 +1,8 @@
+{% import '_includes/forms' as forms %}
+
+{{ forms.textField({
+	label: 'Cache Location',
+	instructions: 'Relative path to the cache directory from the public root.',
+	name: 'cachePath',
+	value: settings.cachePath
+}) }}
