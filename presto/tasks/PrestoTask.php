@@ -5,7 +5,8 @@ class PrestoTask extends BaseTask
 {
 	private $paths;
 
-	public function getDescription() {
+	public function getDescription()
+	{
 		return Craft::t('Refreshing Presto cache');
 	}
 
@@ -14,7 +15,8 @@ class PrestoTask extends BaseTask
 	 *
 	 * @return int
 	 */
-	public function getTotalSteps() {
+	public function getTotalSteps()
+	{
 		// Cancel stale template cache task
 		if ($task = craft()->tasks->getNextPendingTask('DeleteStaleTemplateCaches')) {
 			craft()->tasks->deleteTaskById($this->id);
@@ -30,7 +32,8 @@ class PrestoTask extends BaseTask
 	 * @param int $step
 	 * @return bool
 	 */
-	public function runStep($step) {
+	public function runStep($step)
+	{
 		$path = $this->paths[$step];
 
 		$warmers = craft()->config->get('warmers', 'presto');
@@ -55,7 +58,8 @@ class PrestoTask extends BaseTask
 		return true;
 	}
 
-	protected function defineSettings() {
+	protected function defineSettings()
+	{
 		return array(
 			'paths' => AttributeType::Mixed
 		);

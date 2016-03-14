@@ -12,7 +12,8 @@ class PrestoVariable
 	 * }
 	 * @return string
 	 */
-	public function cache($config = array()) {
+	public function cache($config = array())
+	{
 		$path = craft()->request->getPathInfo();
 		$key = craft()->presto->generateKey($path);
 
@@ -39,7 +40,8 @@ class PrestoVariable
 	 *     @var bool @warm
 	 * }
 	 */
-	public function purge($config = array()) {
+	public function purge($config = array())
+	{
 		craft()->attachEventHandler('onEndRequest', function() use ($config) {
 			craft()->presto->purgeCache($config);
 		});

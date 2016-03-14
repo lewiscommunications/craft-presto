@@ -5,7 +5,8 @@ class PrestoService extends BaseApplicationComponent
 {
 	private $settings;
 
-	public function __construct() {
+	public function __construct()
+	{
 		$this->settings = craft()->plugins->getPlugin('presto')->getSettings();
 	}
 
@@ -15,7 +16,8 @@ class PrestoService extends BaseApplicationComponent
 	 * @param array $elements
 	 * @return array
 	 */
-	public function getPaths($elements) {
+	public function getPaths($elements)
+	{
 		$elements = is_array($elements) ? $elements : array($elements);
 		$cacheIds = array();
 		$paths = array();
@@ -55,7 +57,8 @@ class PrestoService extends BaseApplicationComponent
 	 *
 	 * @param array $paths
 	 */
-	public function processPaths($paths) {
+	public function processPaths($paths)
+	{
 		if (count($paths)) {
 			$paths = array_values(array_unique($paths));
 
@@ -74,7 +77,8 @@ class PrestoService extends BaseApplicationComponent
 	 *
 	 * @param array $config
 	 */
-	public function purgeCache($config = array()) {
+	public function purgeCache($config = array())
+	{
 		$expired = isset($config['expired']) ? $config['expired'] : false;
 		$paths = isset($config['paths']) ? $config['paths'] : array('/');
 		$recursive = isset($config['recursive']) ? $config['recursive'] : true;
@@ -129,7 +133,8 @@ class PrestoService extends BaseApplicationComponent
 	 * @param string $html
 	 * @param array $config
 	 */
-	public function writeCache($path, $html, $config = array()) {
+	public function writeCache($path, $html, $config = array())
+	{
 		if (! isset($config['static']) || $config['static'] !== false) {
 			$pathSegments = array(
 				craft()->config->get('rootPath', 'presto'),
@@ -161,7 +166,8 @@ class PrestoService extends BaseApplicationComponent
 	 * @param array $headers
 	 * @return string
 	 */
-	public function requestPage($path, $headers = array()) {
+	public function requestPage($path, $headers = array())
+	{
 		$client = new \Guzzle\Http\Client();
 
 		$options = array(
@@ -180,9 +186,11 @@ class PrestoService extends BaseApplicationComponent
 	 *
 	 * @return bool
 	 */
-	public function isCacheable() {
-		return ! craft()->request->isLivePreview() &&
-		! craft()->request->isPostRequest();
+	public function isCacheable()
+	{
+		return http_response_code() === 200 &&
+			! craft()->request->isLivePreview() &&
+			! craft()->request->isPostRequest();
 	}
 
 	/**
@@ -192,7 +200,8 @@ class PrestoService extends BaseApplicationComponent
 	 * @param mixed $fingerprint
 	 * @return string
 	 */
-	public function generateKey($path, $fingerprint = false) {
+	public function generateKey($path, $fingerprint = false)
+	{
 		return md5(JsonHelper::encode(array(
 			'fingerprint' => $fingerprint !== false ?
 				$fingerprint :
@@ -207,7 +216,8 @@ class PrestoService extends BaseApplicationComponent
 	 * @param array $cacheIds
 	 * @return array
 	 */
-	private function queryCachePaths($cacheIds = array()) {
+	private function queryCachePaths($cacheIds = array())
+	{
 		$paths = craft()->db->createCommand()
 			->select('path')
 			->from('templatecaches')
@@ -225,7 +235,8 @@ class PrestoService extends BaseApplicationComponent
 	 * @param boolean $recursive
 	 * @return array
 	 */
-	private function getCachePaths($paths, $groups, $recursive) {
+	private function getCachePaths($paths, $groups, $recursive)
+	{
 		$cachePaths = array();
 
 		// Find all paths in the cache directory tree
@@ -270,7 +281,8 @@ class PrestoService extends BaseApplicationComponent
 	 * @param bool $expired
 	 * @return mixed
 	 */
-	private function getCacheEntries($paths, $expired = false) {
+	private function getCacheEntries($paths, $expired = false)
+	{
 		$paths = preg_filter('/^/', 'site:', $paths);
 
 		$query = craft()->db->createCommand()
@@ -294,7 +306,8 @@ class PrestoService extends BaseApplicationComponent
 	 * @param string $type
 	 * @return array
 	 */
-	private function getCriteria($type) {
+	private function getCriteria($type)
+	{
 		$query = craft()->db->createCommand()
 			->from('templatecachecriteria');
 
@@ -315,7 +328,8 @@ class PrestoService extends BaseApplicationComponent
 	 * @param array $elementIds
 	 * @return array
 	 */
-	private function getCaches($elementIds) {
+	private function getCaches($elementIds)
+	{
 		$query = craft()->db->createCommand()
 			->select('cacheId')
 			->from('templatecacheelements');
@@ -337,7 +351,8 @@ class PrestoService extends BaseApplicationComponent
 	 * @param string $path
 	 * @return string
 	 */
-	private function normalizePath($path) {
+	private function normalizePath($path)
+	{
 		return rtrim(preg_replace('~/+~', '/', $path), '/');
 	}
 }

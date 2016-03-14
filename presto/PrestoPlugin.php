@@ -4,49 +4,59 @@ namespace Craft;
 class PrestoPlugin extends BasePlugin
 {
 	private $name = 'Presto';
-	private $version = '0.2.0';
+	private $version = '0.2.1';
 	private $description = 'Static file extension for the native Craft cache.';
 	private $flash;
 
-	public function getName() {
+	public function getName()
+	{
 		return $this->name;
 	}
 
-	public function getVersion() {
+	public function getVersion()
+	{
 		return $this->version;
 	}
 
-	public function getDescription() {
+	public function getDescription()
+	{
 		return Craft::t($this->description);
 	}
 
-	public function getDeveloper() {
+	public function getDeveloper()
+	{
 		return 'Caddis';
 	}
 
-	public function getDeveloperUrl() {
+	public function getDeveloperUrl()
+	{
 		return 'https://www.caddis.co';
 	}
 
-	public function getDocumentationUrl() {
+	public function getDocumentationUrl()
+	{
 		return 'https://github.com/caddis/presto';
 	}
 
-	public function getReleaseFeedUrl() {
+	public function getReleaseFeedUrl()
+	{
 		return 'https://raw.githubusercontent.com/caddis/presto/master/releases.json';
 	}
 
-	public function getIconPath() {
+	public function getIconPath()
+	{
 		return craft()->path->getPluginsPath() . 'presto/resources/icon.svg';
 	}
 
-	public function getSettingsHtml() {
+	public function getSettingsHtml()
+	{
 		return craft()->templates->render('presto/settings', array(
 			'settings' => $this->getSettings()
 		));
 	}
 
-	protected function defineSettings() {
+	protected function defineSettings()
+	{
 		return array(
 			'cachePath' => array(
 				AttributeType::String,
@@ -55,7 +65,8 @@ class PrestoPlugin extends BasePlugin
 		);
 	}
 
-	public function registerCachePaths() {
+	public function registerCachePaths()
+	{
 		$cachePath = craft()->config->get('rootPath', 'presto') .
 			$this->getSettings()->cachePath;
 
@@ -67,7 +78,8 @@ class PrestoPlugin extends BasePlugin
 	/**
 	 * Bind element actions to Presto events
 	 */
-	public function init() {
+	public function init()
+	{
 		if (craft()->request->isCpRequest()) {
 			craft()->on('elements.saveElement', array($this, 'saveElement'));
 			craft()->on('elements.beforePerformAction', array($this, 'beforePerformAction'));
@@ -81,13 +93,12 @@ class PrestoPlugin extends BasePlugin
 	 *
 	 * @param Event $event
 	 */
-	public function saveElement(Event $event) {
+	public function saveElement(Event $event)
+	{
 		$element = $event->params['element'];
 
 		if ($event->params['isNewElement']) {
-			craft()->presto->processElements(array(
-				$element
-			));
+			$paths = craft()->presto->getPaths($element);
 		} elseif ($this->flash) {
 			$paths = $this->flash['paths'];
 
@@ -103,7 +114,9 @@ class PrestoPlugin extends BasePlugin
 					$paths[] = $element->uri;
 				}
 			}
+		}
 
+		if ($paths) {
 			craft()->presto->processPaths($paths);
 		}
 	}
@@ -113,7 +126,8 @@ class PrestoPlugin extends BasePlugin
 	 *
 	 * @param Event $event
 	 */
-	public function beforePerformAction(Event $event) {
+	public function beforePerformAction(Event $event)
+	{
 		$paths = craft()->presto->getPaths(
 			$event->params['criteria']->ids()
 		);
@@ -126,7 +140,8 @@ class PrestoPlugin extends BasePlugin
 	 *
 	 * @param Event $event
 	 */
-	public function beforeSaveElement(Event $event) {
+	public function beforeSaveElement(Event $event)
+	{
 		if (! $event->params['isNewElement'] && ! $this->flash) {
 			$element = $event->params['element'];
 
@@ -142,9 +157,12 @@ class PrestoPlugin extends BasePlugin
 	 *
 	 * @param Event $event
 	 */
-	public function beforeDeleteElements(Event $event) {
-		craft()->presto->processElements(
+	public function beforeDeleteElements(Event $event)
+	{
+		$paths = craft()->presto->getPaths(
 			$event->params['elementIds']
 		);
+
+		craft()->presto->processPaths($paths);
 	}
 }
