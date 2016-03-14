@@ -17,7 +17,7 @@ Note that the *entirety* of your template logic *must* be wrapped by the `cache`
 {% endcache %}
 ```
 
-Keep in mind that when using Presto the `for`, `until`, `if`, and `unless` parameters won't be respected on each request once the file is saved. In the example above `cacheDisabled` represents a Twig variable you could set elsewhere, for instance in specific templates to selectively disable caching on a layout.
+Keep in mind that when using Presto the `for`, `until`, `if`, and `unless` parameters won't be respected on each request once the file is saved. In the example above `cacheDisabled` represents a Twig variable you could set elsewhere. For instance it should be set in error templates, to selectively disable caching on the layout.
 
 The `craft.presto.cache` tag can accept the following optional parameters.
 
@@ -44,20 +44,25 @@ RewriteCond %{REQUEST_METHOD} GET
 RewriteCond %{DOCUMENT_ROOT}/cache%{REQUEST_URI}/index.html -f
 RewriteRule .* /cache%{REQUEST_URI}/index.html [L]
 
-// Craft rewrite here
+# Craft rewrite here
 ```
 
 ##### Nginx
 
 ```nginx
+# Block direct cache access
+location /cache {
+	internal;
+}
+
 # Check Presto cache
 location ~ !\.(css|gif|ico|jpe?g|png|svg)$ {
 	if ($request_method = GET) {
-		try_files $uri %{REQUEST_URI}/index.html;
+		try_files $uri /cache/$uri/index.html;
 	}
 }
 
-// Craft rewrite here
+# Craft rewrite here
 ```
 
 ## Flushing
