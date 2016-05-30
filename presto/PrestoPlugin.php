@@ -4,7 +4,7 @@ namespace Craft;
 class PrestoPlugin extends BasePlugin
 {
 	private $name = 'Presto';
-	private $version = '0.2.1';
+	private $version = '0.3.0';
 	private $description = 'Static file extension for the native Craft cache.';
 	private $flash;
 
@@ -16,6 +16,11 @@ class PrestoPlugin extends BasePlugin
 	public function getVersion()
 	{
 		return $this->version;
+	}
+
+	public function getSchemaVersion()
+	{
+		return '1.0.0';
 	}
 
 	public function getDescription()
@@ -35,17 +40,12 @@ class PrestoPlugin extends BasePlugin
 
 	public function getDocumentationUrl()
 	{
-		return 'https://github.com/caddis/presto';
+		return 'https://github.com/caddis/craft-presto';
 	}
 
 	public function getReleaseFeedUrl()
 	{
-		return 'https://raw.githubusercontent.com/caddis/presto/master/releases.json';
-	}
-
-	public function getIconPath()
-	{
-		return craft()->path->getPluginsPath() . 'presto/resources/icon.svg';
+		return 'https://raw.githubusercontent.com/caddis/craft-presto/master/releases.json';
 	}
 
 	public function getSettingsHtml()
@@ -71,7 +71,7 @@ class PrestoPlugin extends BasePlugin
 			$this->getSettings()->cachePath;
 
 		return array(
-			$cachePath => Craft::t('Presto caches')
+			$cachePath => $this->name . ' ' . Craft::t('caches')
 		);
 	}
 
