@@ -4,7 +4,7 @@ namespace Craft;
 class PrestoPlugin extends BasePlugin
 {
 	private $name = 'Presto';
-	private $version = '0.3.0';
+	private $version = '0.4.0';
 	private $description = 'Static file extension for the native Craft cache.';
 	private $flash;
 
@@ -85,6 +85,7 @@ class PrestoPlugin extends BasePlugin
 			craft()->on('elements.beforePerformAction', array($this, 'beforePerformAction'));
 			craft()->on('elements.beforeSaveElement', array($this, 'beforeSaveElement'));
 			craft()->on('elements.beforeDeleteElements', array($this, 'beforeDeleteElements'));
+			craft()->on('structures.moveElement', array($this, 'moveElement'));
 		}
 	}
 
@@ -96,6 +97,7 @@ class PrestoPlugin extends BasePlugin
 	public function saveElement(Event $event)
 	{
 		$element = $event->params['element'];
+		$paths = [];
 
 		if ($event->params['isNewElement']) {
 			$paths = craft()->presto->getPaths($element);
@@ -116,9 +118,7 @@ class PrestoPlugin extends BasePlugin
 			}
 		}
 
-		if ($paths) {
-			craft()->presto->processPaths($paths);
-		}
+		craft()->presto->processPaths($paths);
 	}
 
 	/**
@@ -162,6 +162,26 @@ class PrestoPlugin extends BasePlugin
 		$paths = craft()->presto->getPaths(
 			$event->params['elementIds']
 		);
+
+		craft()->presto->processPaths($paths);
+	}
+
+	/**
+	 * Process structure reordering
+	 *
+	 * @param Event $event
+	 */
+	public function moveElement(Event $event)
+	{
+		$element = $event->params['element'];
+
+		$paths = craft()->presto->getPaths([
+			$element->id
+		]);
+
+		if ($element->uri) {
+			$paths[] = $element->uri;
+		}
 
 		craft()->presto->processPaths($paths);
 	}
