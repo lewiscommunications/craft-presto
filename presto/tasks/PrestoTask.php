@@ -19,7 +19,7 @@ class PrestoTask extends BaseTask
 	{
 		// Cancel stale template cache task
 		if ($task = craft()->tasks->getNextPendingTask('DeleteStaleTemplateCaches')) {
-			craft()->tasks->deleteTaskById($this->id);
+			craft()->tasks->deleteTaskById($task->id);
 		}
 
 		$this->paths = $this->getSettings()->paths;
