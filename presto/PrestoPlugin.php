@@ -97,7 +97,7 @@ class PrestoPlugin extends BasePlugin
 	public function saveElement(Event $event)
 	{
 		$element = $event->params['element'];
-		$paths = [];
+		$paths = array();
 
 		if ($event->params['isNewElement']) {
 			$paths = craft()->presto->getPaths($element);
