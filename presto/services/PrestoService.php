@@ -4,6 +4,7 @@ namespace Craft;
 class PrestoService extends BaseApplicationComponent
 {
 	private $settings;
+	private $processPaths = array();
 
 	public function __construct()
 	{
@@ -61,14 +62,24 @@ class PrestoService extends BaseApplicationComponent
 	{
 		if (count($paths)) {
 			$paths = array_values(array_unique($paths));
+			$diff = array_diff($paths, $this->processPaths);
 
-			$this->purgeCache(array(
-				'paths' => $paths
-			));
+			if (count($diff)) {
+				$this->processPaths = array_merge($this->processPaths, $diff);
 
-			craft()->tasks->createTask('Presto', null, array(
-				'paths' => $paths
-			));
+				// Cancel existing Presto task
+				if ($task = craft()->tasks->getNextPendingTask('Presto')) {
+					craft()->tasks->deleteTaskById($task->id);
+				}
+
+				$this->purgeCache(array(
+					'paths' => $diff
+				));
+
+				craft()->tasks->createTask('Presto', null, array(
+					'paths' => $this->processPaths
+				));
+			}
 		}
 	}
 
