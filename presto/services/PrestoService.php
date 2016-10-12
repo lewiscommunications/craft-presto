@@ -67,17 +67,8 @@ class PrestoService extends BaseApplicationComponent
 			if (count($diff)) {
 				$this->processPaths = array_merge($this->processPaths, $diff);
 
-				// Cancel existing Presto task
-				if ($task = craft()->tasks->getNextPendingTask('Presto')) {
-					craft()->tasks->deleteTaskById($task->id);
-				}
-
 				$this->purgeCache(array(
 					'paths' => $diff
-				));
-
-				craft()->tasks->createTask('Presto', null, array(
-					'paths' => $this->processPaths
 				));
 			}
 		}
@@ -93,7 +84,6 @@ class PrestoService extends BaseApplicationComponent
 		$expired = isset($config['expired']) ? $config['expired'] : false;
 		$paths = isset($config['paths']) ? $config['paths'] : array('/');
 		$recursive = isset($config['recursive']) ? $config['recursive'] : true;
-		$warm = isset($config['warm']) ? $config['warm'] : false;
 
 		$groups = craft()->config->get('groups', 'presto');
 		$groups[] = '';
@@ -126,14 +116,6 @@ class PrestoService extends BaseApplicationComponent
 				@unlink($targetFile);
 				@rmdir($targetPath);
 			}
-		}
-
-		if ($warm) {
-			$task = craft()->tasks->createTask('Presto', null, array(
-				'paths' => array_values(array_unique($cachePaths))
-			));
-
-			craft()->tasks->runTask($task);
 		}
 	}
 

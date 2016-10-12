@@ -4,7 +4,7 @@ namespace Craft;
 class PrestoPlugin extends BasePlugin
 {
 	private $name = 'Presto';
-	private $version = '0.4.0';
+	private $version = '0.4.1';
 	private $description = 'Static file extension for the native Craft cache.';
 	private $flash;
 
@@ -100,7 +100,9 @@ class PrestoPlugin extends BasePlugin
 		$paths = array();
 
 		if ($event->params['isNewElement']) {
-			$paths = craft()->presto->getPaths($element);
+			// Clear the entire cache when a new element is saved
+			craft()->templateCache->deleteAllCaches();
+			craft()->presto->purgeCache();
 		} elseif ($this->flash) {
 			$paths = $this->flash['paths'];
 
