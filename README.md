@@ -9,12 +9,12 @@ Presto lets Craft do the heavy lifting of calculating the elements within the te
 Note that the *entirety* of your template logic *must* be wrapped by the `cache` tags. In addition, it is recommended that you add the `globally` tag so that Craft does not overload the template cache table.
 
 ```twig
-{% cache globally using key craft.presto.cache if 
+{%- cache globally using key craft.presto.cache if 
 	conf.cacheEnabled is defined and 
 	conf.cacheEnabled and cacheDisabled is not defined 
-%}
+-%}
 	{# Template Logic #}
-{% endcache %}
+{%- endcache -%}
 ```
 
 Keep in mind that when using Presto the `for`, `until`, `if`, and `unless` parameters won't be respected on each request once the file is saved. In the example above `cacheDisabled` represents a Twig variable you could set elsewhere. For instance it should be set in error templates, to selectively disable caching on the layout.
