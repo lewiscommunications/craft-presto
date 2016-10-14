@@ -9,24 +9,40 @@ Presto lets Craft do the heavy lifting of calculating the elements within the te
 Note that the *entirety* of your template logic *must* be wrapped by the `cache` tags. In addition, it is recommended that you add the `globally` tag so that Craft does not overload the template cache table.
 
 ```twig
-{% cache globally using key craft.presto.cache if conf.cacheEnabled is defined and conf.cacheEnabled and cacheDisabled is not defined %}
+{% cache globally using key craft.presto.cache if 
+	conf.cacheEnabled is defined and 
+	conf.cacheEnabled and cacheDisabled is not defined 
+%}
 	{# Template Logic #}
 {% endcache %}
 ```
 
 Keep in mind that when using Presto the `for`, `until`, `if`, and `unless` parameters won't be respected on each request once the file is saved. In the example above `cacheDisabled` represents a Twig variable you could set elsewhere. For instance it should be set in error templates, to selectively disable caching on the layout.
 
-The `craft.presto.cache` tag can accept the following optional parameters.
+```twig
+{% extends '_layouts/master' %}
 
-* group - When set the requested page will write into a sub-folder within the top-level cache directory.
-* static - Setting to false will disable static caching for the request and fall back to native caching logic. The cache key will still be returned, only a static file won't be written.
+{% set cacheDisabled = true %}
+
+{% block content %}
+	{# page content #}
+{% endblock %}
+```
+
+### Parameters
 
 ```twig
-craft.presto.cache({
+{% craft.presto.cache({
 	group: 'pjax',
 	static: false
-})
+}) %}
 ```
+
+**group**<br>
+When set the requested page will write into a sub-folder within the top-level cache directory.
+
+**static**<br>
+Setting to false will disable static caching for the request and fall back to native caching logic. The cache key will still be returned, only a static file won't be written.
 
 ## Server
 
@@ -68,19 +84,8 @@ Presto resolves subdomain hosts automatically. Static html files are created ins
 
 ## Config
 
-Presto includes the functionality to group static html files. The `groups` config variable tells Presto where to store cached files. Presto will grab the first group key value pair that returns true. If all groups return false, the file is created inside the main directory. The groups keys should match group values passed to `craft.presto.cache`.
-
-In this example we're letting Presto know we have PJAX requests caching independently for automated flushing. This works in conjunction with a specific server routing condition for the PJAX header as well as passing a group parameter value of "pjax" in the PJAX layout to the `craft.presto.cache` tag.
-
-```php
-<?php
-
-return array(
-	'groups' => array(
-		'pjax' => isset($_SERVER['HTTP_X_PJAX']) && $_SERVER['HTTP_X_PJAX'] === 'true'
-	)
-);
-```
+**rootPath:**<br>
+Change the root public directory. Default: `$_SERVER['DOCUMENT_ROOT']`
 
 ## Installation
 
