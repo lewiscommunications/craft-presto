@@ -2,11 +2,19 @@
 
 Presto is a static file extension for the native [Craft cache](https://craftcms.com/docs/templating/cache). It works alongside standard Twig `{% cache %}` tag pairs and includes cache-busting features. Just like standard caching, Presto is automatic. Simply install, update your layouts, and then the cache will bust automatically as you create, update, or delete content within Craft.
 
+## Getting Started
+
+In order to take full advantage of Presto's static caching, turn off [element query caching](https://craftcms.com/docs/config-settings#cacheElementQueries). This keeps the `DeleteStaleTemplateCaches` task from running in the admin. Since Presto busts the entire cache when a new element is saved, element query caching is not necessary.
+
+```php
+'cacheElementQueries' => false
+```
+
 ## Template
 
-Presto lets Craft do the heavy lifting of calculating the elements within the template. As a result, all you need to do in your templates is pass the cache key returned from `craft.presto.cache` to the native cache tag pair. Presto will return a unique cache key that includes the request path by default.
+Presto lets Craft do the heavy lifting of calculating the elements within the template. As a result, all you need to do in your templates is pass the cache key returned from `craft.presto.cache` to the native cache tag pair. Presto will return a cache key that includes the host, group (if one is set), and path.
 
-Note that the *entirety* of your template logic *must* be wrapped by the `cache` tags. In addition, it is recommended that you add the `globally` tag so that Craft does not overload the template cache table.
+Note that the *entirety* of your template logic *must* be wrapped by the `cache` tags. In addition, it is recommended that you add the `globally` tag so that Craft does not overload the cache with unneccessary caches (i.e. query string requests).
 
 ```twig
 {%- cache globally using key craft.presto.cache if 
@@ -73,7 +81,7 @@ RewriteRule .* /cache/%{HTTP_HOST}/presto%{REQUEST_URI}/index.html [L,E=nocache:
 
 ## Directory Structure
 
-Presto resolves subdomain hosts automatically. Static html files are created inside a directory named after the requested host (i.e. coolwebsite.com, sub.coolwebsite.com). An additional directory called "presto" is created inside each host directory to avoid .htaccess filename conflicts. See below for an example cache file directory setup:
+Presto resolves subdomain hosts automatically. Static html files are created inside a directory named after the requested host (i.e. coolwebsite.com, sub.coolwebsite.com). An additional directory called "presto" is created inside each host directory to avoid .htaccess filename conflicts. See below for an example cache file directory structure:
 
 - cache
 	- coolwebsite.com
