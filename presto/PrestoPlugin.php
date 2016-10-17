@@ -6,7 +6,7 @@ class PrestoPlugin extends BasePlugin
 	private $name = 'Presto';
 	private $version = '0.4.1';
 	private $description = 'Static file extension for the native Craft cache.';
-	private $flash;
+	private $caches;
 
 	public function getName()
 	{
@@ -85,71 +85,39 @@ class PrestoPlugin extends BasePlugin
 			craft()->on('elements.beforePerformAction', array($this, 'beforePerformAction'));
 			craft()->on('elements.beforeSaveElement', array($this, 'beforeSaveElement'));
 			craft()->on('elements.beforeDeleteElements', array($this, 'beforeDeleteElements'));
-			craft()->on('structures.moveElement', array($this, 'moveElement'));
+			craft()->on('structures.beforeMoveElement', array($this, 'beforeMoveElement'));
 		}
 	}
 
 	/**
-	 * Process new elements
-	 *
-	 * @param Event $event
-	 */
-	public function saveElement(Event $event)
-	{
-		$element = $event->params['element'];
-		$paths = array();
-
-		if ($event->params['isNewElement']) {
-			// Clear the entire cache when a new element is saved
-			craft()->templateCache->deleteAllCaches();
-			craft()->presto->purgeCache();
-		} elseif ($this->flash) {
-			$paths = $this->flash['paths'];
-
-			// Process altered element paths
-			if ($this->flash['uri'] !== $element->uri) {
-				craft()->presto->purgeCache(array(
-					'paths' => array(
-						$this->flash['uri']
-					)
-				));
-
-				if ($element->uri) {
-					$paths[] = $element->uri;
-				}
-			}
-		}
-
-		craft()->presto->processPaths($paths);
-	}
-
-	/**
-	 * Process element actions
-	 *
-	 * @param Event $event
-	 */
-	public function beforePerformAction(Event $event)
-	{
-		$paths = craft()->presto->getPaths(
-			$event->params['criteria']->ids()
-		);
-
-		craft()->presto->processPaths($paths);
-	}
-
-	/**
-	 * Process updated elements
+	 * Process element before saving
 	 *
 	 * @param Event $event
 	 */
 	public function beforeSaveElement(Event $event)
 	{
-		if (! $event->params['isNewElement'] && ! $this->flash) {
-			$element = $event->params['element'];
+		if (! $event->params['isNewElement'] && ! $this->caches) {
+			$this->caches = craft()->presto->getRelatedTemplateCaches(
+				$event->params['element']->id
+			);
+		}
+	}
 
-			$this->flash = array(
-				'paths' => craft()->presto->getPaths($element),
-				'uri' => $element->uri
+	/**
+	 * Process element on save
+	 *
+	 * @param Event $event
+	 */
+	public function saveElement(Event $event)
+	{
+		if ($event->params['isNewElement']) {
+			// If a new element is saved, bust the entire cache
+			craft()->templateCache->deleteAllCaches();
+			craft()->presto->purgeEntireCache();
+		} elseif ($this->caches) {
+			// Otherwise, target specific caches
+			craft()->presto->purgeCache(
+				craft()->presto->formatPaths($this->caches)
 			);
 		}
 	}
@@ -161,11 +129,35 @@ class PrestoPlugin extends BasePlugin
 	 */
 	public function beforeDeleteElements(Event $event)
 	{
-		$paths = craft()->presto->getPaths(
+		$caches = craft()->presto->getRelatedTemplateCaches(
 			$event->params['elementIds']
 		);
 
-		craft()->presto->processPaths($paths);
+		craft()->presto->purgeCache(craft()->presto->formatPaths($caches));
+	}
+
+	/**
+	 * Process batch element actions
+	 *
+	 * @param Event $event
+	 */
+	public function beforePerformAction(Event $event)
+	{
+		if (! $event->params['action']->isDestructive()) {
+			$caches = craft()->presto->getRelatedTemplateCaches(
+				$event->params['criteria']->ids()
+			);
+
+			if (count($caches)) {
+				// If there are caches to bust, target them specifically
+				craft()->presto->purgeCache(craft()->presto->formatPaths($caches));
+			} else {
+				// Otherwise, clear the entire cache since the new/enabled
+				// elements won't be part of the existing cache
+				craft()->templateCache->deleteAllCaches();
+				craft()->presto->purgeEntireCache();
+			}
+		}
 	}
 
 	/**
@@ -173,18 +165,12 @@ class PrestoPlugin extends BasePlugin
 	 *
 	 * @param Event $event
 	 */
-	public function moveElement(Event $event)
+	public function beforeMoveElement(Event $event)
 	{
-		$element = $event->params['element'];
+		$caches = craft()->presto->getRelatedTemplateCaches(
+			$event->params['element']->id
+		);
 
-		$paths = craft()->presto->getPaths([
-			$element->id
-		]);
-
-		if ($element->uri) {
-			$paths[] = $element->uri;
-		}
-
-		craft()->presto->processPaths($paths);
+		craft()->presto->purgeCache(craft()->presto->formatPaths($caches));
 	}
 }
