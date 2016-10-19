@@ -4,7 +4,7 @@ namespace Craft;
 class PrestoPlugin extends BasePlugin
 {
 	private $name = 'Presto';
-	private $version = '0.4.1';
+	private $version = '0.5.0';
 	private $description = 'Static file extension for the native Craft cache.';
 	private $caches;
 
