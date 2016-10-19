@@ -4,152 +4,79 @@ namespace Craft;
 class PrestoService extends BaseApplicationComponent
 {
 	private $settings;
-	private $processPaths = array();
+	private $rootPath;
 
 	public function __construct()
 	{
 		$this->settings = craft()->plugins->getPlugin('presto')->getSettings();
+		$this->rootPath = craft()->config->get('rootPath', 'presto');
 	}
 
 	/**
-	 * Get all cached paths related to element
-	 *
-	 * @param array $elements
-	 * @return array
-	 */
-	public function getPaths($elements)
-	{
-		$elements = is_array($elements) ? $elements : array($elements);
-		$cacheIds = array();
-		$paths = array();
-
-		foreach ($elements as $element) {
-			if (is_string($element)) {
-				$element = craft()->elements->getElementById($element);
-			}
-
-			$rows = $this->getCriteria($element->elementType);
-
-			// Get potential matching caches based on template criteria
-			foreach ($rows as $row) {
-				$params = JsonHelper::decode($row['criteria']);
-				$criteria = craft()->elements->getCriteria($row['type'], $params);
-				$criteria->status = null;
-
-				// Add the cache ID if the template includes matching elements
-				if (in_array($element->id, $criteria->ids())) {
-					$cacheIds[] = $row['cacheId'];
-				}
-			}
-
-			// Get directly related cache element
-			$cacheIds = array_merge($this->getCaches($element->id), $cacheIds);
-
-			if ($element->uri) {
-				$paths[] = $element->uri;
-			}
-		}
-
-		return $paths + $this->queryCachePaths(array_unique($cacheIds));
-	}
-
-	/**
-	 * Refresh cache for given paths
+	 * Purge cached files by path
 	 *
 	 * @param array $paths
 	 */
-	public function processPaths($paths)
+	public function purgeCache($paths = array())
 	{
 		if (count($paths)) {
-			$paths = array_values(array_unique($paths));
-			$diff = array_diff($paths, $this->processPaths);
+			foreach ($paths as $path) {
+				$url = explode('|', $path, 2);
 
-			if (count($diff)) {
-				$this->processPaths = array_merge($this->processPaths, $diff);
+				$targetPath = IOHelper::folderExists(
+					$this->normalizePath(implode('/', array(
+						$this->rootPath,
+						$this->settings->cachePath,
+						$url[0],
+						'presto',
+						str_replace('home', '', $url[1])
+					)))
+				);
 
-				// Cancel existing Presto task
-				if ($task = craft()->tasks->getNextPendingTask('Presto')) {
-					craft()->tasks->deleteTaskById($task->id);
+				$targetFile = IOHelper::fileExists($targetPath . '/index.html');
+
+				if ($targetFile) {
+					@unlink($targetFile);
 				}
 
-				$this->purgeCache(array(
-					'paths' => $diff
-				));
-
-				craft()->tasks->createTask('Presto', null, array(
-					'paths' => $this->processPaths
-				));
+				if ($targetPath) {
+					@rmdir($targetPath);
+				}
 			}
 		}
 	}
 
 	/**
-	 * Purge files from the cache
-	 *
-	 * @param array $config
+	 * Purge all cached files
 	 */
-	public function purgeCache($config = array())
+	public function purgeEntireCache()
 	{
-		$expired = isset($config['expired']) ? $config['expired'] : false;
-		$paths = isset($config['paths']) ? $config['paths'] : array('/');
-		$recursive = isset($config['recursive']) ? $config['recursive'] : true;
-		$warm = isset($config['warm']) ? $config['warm'] : false;
-
-		$groups = craft()->config->get('groups', 'presto');
-		$groups[] = '';
-
-		$cachePaths = $this->getCachePaths($paths, $groups, $recursive);
-		$cacheEntries = $this->getCacheEntries($cachePaths, $expired);
-
-		// Filter out unexpired cached paths
-		if ($expired) {
-			$entryPaths = array_unique(array_column($cacheEntries, 'path'));
-			$cachePaths = array_intersect($entryPaths, $cachePaths);
-		}
-
-		craft()->templateCache->deleteCacheById(
-			array_unique(array_column($cacheEntries, 'id'))
+		$cachePath = IOHelper::folderExists(
+			$this->rootPath .
+			$this->settings->cachePath
 		);
 
-		// Remove matched cache files
-		foreach ($groups as $group) {
-			foreach ($cachePaths as $path) {
-				$targetPath = $this->normalizePath(implode('/', array(
-					craft()->config->get('rootPath', 'presto'),
-					$this->settings->cachePath,
-					$group,
-					$path
-				)));
-
-				$targetFile = $targetPath . '/index.html';
-
-				@unlink($targetFile);
-				@rmdir($targetPath);
-			}
-		}
-
-		if ($warm) {
-			$task = craft()->tasks->createTask('Presto', null, array(
-				'paths' => array_values(array_unique($cachePaths))
-			));
-
-			craft()->tasks->runTask($task);
+		if ($cachePath) {
+			IOHelper::clearFolder($cachePath);
 		}
 	}
 
 	/**
 	 * Write the HTML output to a static cache file
 	 *
+	 * @param string $host
 	 * @param string $path
 	 * @param string $html
 	 * @param array $config
 	 */
-	public function writeCache($path, $html, $config = array())
+	public function writeCache($host, $path, $html, $config = array())
 	{
 		if (! isset($config['static']) || $config['static'] !== false) {
 			$pathSegments = array(
-				craft()->config->get('rootPath', 'presto'),
-				$this->settings->cachePath
+				$this->rootPath,
+				$this->settings->cachePath,
+				$host,
+				'presto'
 			);
 
 			if (isset($config['group'])) {
@@ -171,28 +98,6 @@ class PrestoService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Send page request
-	 *
-	 * @param string $path
-	 * @param array $headers
-	 * @return string
-	 */
-	public function requestPage($path, $headers = array())
-	{
-		$client = new \Guzzle\Http\Client();
-
-		$options = array(
-			'exceptions' => false,
-			'headers' => $headers,
-			'verify' => false
-		);
-
-		return $client->get(craft()->getSiteUrl() . $path, null, $options)
-			->send()
-			->getBody();
-	}
-
-	/**
 	 * Determine if the current request is cacheable
 	 *
 	 * @return bool
@@ -205,155 +110,60 @@ class PrestoService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Generate native Craft cache key
+	 * Generate cacheKey based on the host and path
 	 *
-	 * @param string $path
-	 * @param mixed $fingerprint
+	 * @param array $keySegments {
+	 *		@var string $host
+	 *		@var string $path
+	 * 		@var string $group (optional)
+	 * }
 	 * @return string
 	 */
-	public function generateKey($path, $fingerprint = false)
+	public function generateKey($keySegments)
 	{
-		return md5(JsonHelper::encode(array(
-			'fingerprint' => $fingerprint !== false ?
-				$fingerprint :
-				craft()->config->get('fingerprint', 'presto'),
-			'path' => $path
-		)));
+		$group = isset($keySegments['group']) ? $keySegments['group'] . '/' : '';
+		$path = $keySegments['path'] ? $keySegments['path'] : 'home';
+
+		return $keySegments['host'] . '|' . $group . $path;
 	}
 
 	/**
-	 * Get cache ID paths
+	 * Get template caches by elementId
 	 *
-	 * @param array $cacheIds
+	 * @param array|string $elementIds
 	 * @return array
 	 */
-	private function queryCachePaths($cacheIds = array())
+	public function getRelatedTemplateCaches($elementIds)
 	{
-		$paths = craft()->db->createCommand()
-			->select('path')
-			->from('templatecaches')
-			->where(array('in', 'id', $cacheIds))
-			->queryColumn();
-
-		return str_replace('site:', '', $paths);
+		return craft()->db->createCommand()
+			->select('cacheKey')
+			->from('templatecaches as caches')
+			->join(
+				'templatecacheelements as elements',
+				'caches.id = elements.cacheId'
+			)
+			->where(array(
+				'elements.elementId' => is_array($elementIds) ?
+					implode(',', $elementIds) : $elementIds
+			))
+			->queryAll();
 	}
 
 	/**
-	 * Get matching cache groups
+	 * Format cacheKey arrays into an array of paths
 	 *
-	 * @param array $paths
-	 * @param array $groups
-	 * @param boolean $recursive
+	 * @param $caches
 	 * @return array
 	 */
-	private function getCachePaths($paths, $groups, $recursive)
+	public function formatPaths($caches)
 	{
-		$cachePaths = array();
+		$paths = array();
 
-		// Find all paths in the cache directory tree
-		foreach ($groups as $group) {
-			foreach ($paths as $path) {
-				$rootPath = $this->normalizePath(implode('/', array(
-					craft()->config->get('rootPath', 'presto'),
-					$this->settings->cachePath,
-					$group
-				)));
-
-				$targetPath = $rootPath . '/' . $path;
-				$cachePaths[] = $path;
-
-				if (file_exists($targetPath)) {
-					if ($recursive) {
-						$iterator = new \RecursiveIteratorIterator(
-							new \RecursiveDirectoryIterator($targetPath)
-						);
-
-						foreach ($iterator as $item) {
-							if ($item->isDir()) {
-								$cachePaths[] = $this->normalizePath(
-									str_replace($rootPath . '/', '', $item->getPath())
-								);
-							}
-						}
-					}
-				}
-			}
+		foreach ($caches as $cache) {
+			$paths[] = $cache['cacheKey'];
 		}
 
-		return array_unique(
-			array_reverse($cachePaths)
-		);
-	}
-
-	/**
-	 * Get the cache entries for a set of paths
-	 *
-	 * @param array $paths
-	 * @param bool $expired
-	 * @return mixed
-	 */
-	private function getCacheEntries($paths, $expired = false)
-	{
-		$paths = preg_filter('/^/', 'site:', $paths);
-
-		$query = craft()->db->createCommand()
-			->select('id,  REPLACE(path, "site:", "") AS path')
-			->from('templatecaches')
-			->where(array('in', 'path', $paths));
-
-		if ($expired) {
-			$query->andWhere(
-				'expiryDate <= :now',
-				array('now' => DateTimeHelper::currentTimeForDb())
-			);
-		}
-
-		return $query->queryAll();
-	}
-
-	/**
-	 * Get criteria data for a given element type
-	 *
-	 * @param string $type
-	 * @return array
-	 */
-	private function getCriteria($type)
-	{
-		$query = craft()->db->createCommand()
-			->from('templatecachecriteria');
-
-		if (is_array($type)) {
-			$query->where(array('in', 'type', $type));
-		} else {
-			$query->where('type = :type', array(
-				':type' => $type
-			));
-		}
-
-		return $query->queryAll();
-	}
-
-	/**
-	 * Get direct cache IDs for given elements
-	 *
-	 * @param array $elementIds
-	 * @return array
-	 */
-	private function getCaches($elementIds)
-	{
-		$query = craft()->db->createCommand()
-			->select('cacheId')
-			->from('templatecacheelements');
-
-		if (is_array($elementIds)) {
-			$query->where(array('in', 'elementId', $elementIds));
-		} else {
-			$query->where('elementId = :elementId', array(
-				':elementId' => $elementIds
-			));
-		}
-
-		return $query->queryColumn();
+		return $paths;
 	}
 
 	/**

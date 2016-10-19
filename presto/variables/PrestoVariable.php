@@ -14,36 +14,30 @@ class PrestoVariable
 	 */
 	public function cache($config = array())
 	{
+		$host = craft()->request->getServerName();
 		$path = craft()->request->getPathInfo();
-		$key = craft()->presto->generateKey($path);
 
-		craft()->attachEventHandler('onEndRequest', function() use ($config, $path, $key) {
+		$keySegments = [
+			'host' => $host,
+			'path' => $path
+		];
+
+		if (isset($config['group']) && $config['group']) {
+			$keySegments['group'] = $config['group'];
+		}
+
+		$key = craft()->presto->generateKey($keySegments);
+
+		craft()->attachEventHandler('onEndRequest', function() use ($config, $host, $path, $key) {
 			if ((! isset($config['static']) || $config['static'] !== false) &&
 				craft()->presto->isCacheable()
 			) {
 				if ($html = craft()->templateCache->getTemplateCache($key, true)) {
-					craft()->presto->writeCache($path, $html, $config);
+					craft()->presto->writeCache($host, $path, $html, $config);
 				}
 			}
 		});
 
 		return $key;
-	}
-
-	/**
-	 * Purge a set of files from the Presto cache
-	 *
-	 * @param array $config (optional) {
-	 *     @var bool $expired
-	 *     @var array $paths
-	 *     @var bool $recursive
-	 *     @var bool $warm
-	 * }
-	 */
-	public function purge($config = array())
-	{
-		craft()->attachEventHandler('onEndRequest', function() use ($config) {
-			craft()->presto->purgeCache($config);
-		});
 	}
 }
