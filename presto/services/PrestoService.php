@@ -12,6 +12,69 @@ class PrestoService extends BaseApplicationComponent
 		$this->rootPath = craft()->config->get('rootPath', 'presto');
 	}
 
+	public function getPurgeEvents($dateTime)
+	{
+		$paths = [];
+
+		$events = Presto_PrestoCachePurgeRecord::model()
+			->findAll('purged_at >= :dateTime', [
+				':dateTime' => $dateTime->mySqlDateTime()
+			]);
+
+		foreach ($events as $event) {
+			if ($event->paths === 'all') {
+				return [
+					'all'
+				];
+			}
+
+			$paths = array_merge($paths, unserialize($event->paths));
+		}
+
+		sort($paths);
+
+		return $paths;
+	}
+
+	public function storePurgeEvent($paths = array())
+	{
+		if (count($paths)) {
+			$this->storeEvent(serialize($paths));
+		}
+	}
+
+	public function storePurgeAllEvent()
+	{
+		$this->storeEvent('all');
+	}
+
+	private function storeEvent($paths)
+	{
+		$event = new Presto_PrestoCachePurgeRecord;
+
+		$event->setAttributes([
+			'purged_at' => $this->getDateTime(),
+			'paths' => $paths
+		]);
+
+		$event->save();
+	}
+
+	public function getDateTime()
+	{
+		$dt = new DateTime();
+		$dt->setTimezone(new \DateTimeZone(craft()->getTimeZone()));
+
+		return $dt;
+	}
+
+	public function updateRootPath($path)
+	{
+		if (IOHelper::folderExists($path)) {
+			$this->rootPath = $path;
+		}
+	}
+
 	/**
 	 * Purge cached files by path
 	 *

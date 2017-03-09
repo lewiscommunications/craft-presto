@@ -6,3 +6,15 @@
 	name: 'cachePath',
 	value: settings.cachePath
 }) }}
+
+{% if craft.config.get('purgeMethod', 'presto') == 'cron' %}
+    <div class="field">
+        <div class="heading">
+            <label>Purge Cache</label>
+            <div class="instructions">
+                Schedule purging of Presto static cache
+            </div>
+        </div>
+        <a class="btn submit" href="{{ url('settings/plugins/presto/purge') }}">Purge Cache</a>
+    </div>
+{% endif %}
