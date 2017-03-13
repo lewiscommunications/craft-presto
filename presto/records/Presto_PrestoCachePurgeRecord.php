@@ -27,7 +27,7 @@ class Presto_PrestoCachePurgeRecord extends BaseRecord
 		return [
 			[
 				'columns' => 'purgedAt',
-				'unique' => true
+				'unique' => false
 			]
 		];
 	}

@@ -13,7 +13,7 @@ class m170311_030749_presto_createPrestoPurgeTable extends BaseMigration
 			'paths' => ['required' => true],
 		], null, true);
 
-		craft()->db->createCommand()->createIndex('presto_cachepurge', 'purgedAt', true);
+		craft()->db->createCommand()->createIndex('presto_cachepurge', 'purgedAt', false);
 
 		return true;
 	}
