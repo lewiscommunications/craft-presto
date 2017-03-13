@@ -12,7 +12,7 @@ class PrestoVariable
 	 * }
 	 * @return string
 	 */
-	public function cache($config = array())
+	public function cache($config = [])
 	{
 		$host = craft()->request->getServerName();
 		$path = craft()->request->getPathInfo();

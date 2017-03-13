@@ -1,6 +1,6 @@
 <?php
 
-return array(
+return [
 	'rootPath' => $_SERVER['DOCUMENT_ROOT'],
 	'purgeMethod' => 'immediate'
-);
+];

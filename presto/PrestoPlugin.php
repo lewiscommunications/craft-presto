@@ -50,33 +50,33 @@ class PrestoPlugin extends BasePlugin
 
 	public function getSettingsHtml()
 	{
-		return craft()->templates->render('presto/settings', array(
+		return craft()->templates->render('presto/settings', [
 			'settings' => $this->getSettings()
-		));
+		]);
 	}
 
 	public function registerCpRoutes()
 	{
 		// Point the purge action to our presto controller
-		return array(
+		return [
 			'settings/plugins/presto/purge' => [
 				'action' => 'presto/purgeCache'
 			]
-		);
+		];
 	}
 
 	protected function defineSettings()
 	{
-		return array(
-			'rootPath' => array(
+		return [
+			'rootPath' => [
 				AttributeType::String,
 				'default' => craft()->config->get('rootPath', 'presto')
-			),
-			'cachePath' => array(
+			],
+			'cachePath' => [
 				AttributeType::String,
 				'default' => '/cache'
-			)
-		);
+			]
+		];
 	}
 
 	private function updateSettings()
@@ -96,9 +96,9 @@ class PrestoPlugin extends BasePlugin
 			$cachePath = craft()->config->get('rootPath', 'presto') .
 				$this->getSettings()->cachePath;
 
-			return array(
+			return [
 				$cachePath => $this->name . ' ' . Craft::t('caches')
-			);
+			];
 		}
 	}
 
@@ -108,11 +108,11 @@ class PrestoPlugin extends BasePlugin
 	public function init()
 	{
 		if (craft()->request->isCpRequest()) {
-			craft()->on('elements.saveElement', array($this, 'saveElement'));
-			craft()->on('elements.beforePerformAction', array($this, 'beforePerformAction'));
-			craft()->on('elements.beforeSaveElement', array($this, 'beforeSaveElement'));
-			craft()->on('elements.beforeDeleteElements', array($this, 'beforeDeleteElements'));
-			craft()->on('structures.beforeMoveElement', array($this, 'beforeMoveElement'));
+			craft()->on('elements.saveElement', [$this, 'saveElement']);
+			craft()->on('elements.beforePerformAction', [$this, 'beforePerformAction']);
+			craft()->on('elements.beforeSaveElement', [$this, 'beforeSaveElement']);
+			craft()->on('elements.beforeDeleteElements', [$this, 'beforeDeleteElements']);
+			craft()->on('structures.beforeMoveElement', [$this, 'beforeMoveElement']);
 		}
 	}
 

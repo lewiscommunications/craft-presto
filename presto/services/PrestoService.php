@@ -36,7 +36,7 @@ class PrestoService extends BaseApplicationComponent
 		return $paths;
 	}
 
-	public function storePurgeEvent($paths = array())
+	public function storePurgeEvent($paths = [])
 	{
 		if (count($paths)) {
 			$this->storeEvent(serialize($paths));
@@ -80,20 +80,20 @@ class PrestoService extends BaseApplicationComponent
 	 *
 	 * @param array $paths
 	 */
-	public function purgeCache($paths = array())
+	public function purgeCache($paths = [])
 	{
 		if (count($paths)) {
 			foreach ($paths as $path) {
 				$url = explode('|', $path, 2);
 
 				$targetPath = IOHelper::folderExists(
-					$this->normalizePath(implode('/', array(
+					$this->normalizePath(implode('/', [
 						$this->rootPath,
 						$this->settings->cachePath,
 						$url[0],
 						'presto',
 						str_replace('home', '', $url[1])
-					)))
+					]))
 				);
 
 				$targetFile = IOHelper::fileExists($targetPath . '/index.html');
@@ -132,15 +132,15 @@ class PrestoService extends BaseApplicationComponent
 	 * @param string $html
 	 * @param array $config
 	 */
-	public function writeCache($host, $path, $html, $config = array())
+	public function writeCache($host, $path, $html, $config = [])
 	{
 		if (! isset($config['static']) || $config['static'] !== false) {
-			$pathSegments = array(
+			$pathSegments = [
 				$this->rootPath,
 				$this->settings->cachePath,
 				$host,
 				'presto'
-			);
+			];
 
 			if (isset($config['group'])) {
 				$pathSegments[] = $config['group'];
@@ -205,11 +205,11 @@ class PrestoService extends BaseApplicationComponent
 				'templatecacheelements as elements',
 				'caches.id = elements.cacheId'
 			)
-			->where(array(
+			->where([
 				'in',
 				'elements.elementId',
 				$elementIds
-			))
+			])
 			->queryAll();
 	}
 
@@ -221,7 +221,7 @@ class PrestoService extends BaseApplicationComponent
 	 */
 	public function formatPaths($caches)
 	{
-		$paths = array();
+		$paths = [];
 
 		foreach ($caches as $cache) {
 			$paths[] = $cache['cacheKey'];
