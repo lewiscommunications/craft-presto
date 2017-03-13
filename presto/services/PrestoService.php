@@ -12,12 +12,16 @@ class PrestoService extends BaseApplicationComponent
 		$this->rootPath = craft()->config->get('rootPath', 'presto');
 	}
 
+	/**
+	 * @param $dateTime
+	 * @return array
+	 */
 	public function getPurgeEvents($dateTime)
 	{
 		$paths = [];
 
 		$events = Presto_PrestoCachePurgeRecord::model()
-			->findAll('purged_at >= :dateTime', [
+			->findAll('purgedAt >= :dateTime', [
 				':dateTime' => $dateTime->mySqlDateTime()
 			]);
 
@@ -36,6 +40,11 @@ class PrestoService extends BaseApplicationComponent
 		return $paths;
 	}
 
+	/**
+	 * Record specific cache paths that need to be busted
+	 *
+	 * @param array $paths
+	 */
 	public function storePurgeEvent($paths = [])
 	{
 		if (count($paths)) {
@@ -43,29 +52,34 @@ class PrestoService extends BaseApplicationComponent
 		}
 	}
 
+	/**
+	 * Record the need to bust the entire cache
+	 */
 	public function storePurgeAllEvent()
 	{
 		$this->storeEvent('all');
 	}
 
+	/**
+	 * Store recorded events for the static cache
+	 *
+	 * @param $paths
+	 */
 	private function storeEvent($paths)
 	{
 		$event = new Presto_PrestoCachePurgeRecord;
 
 		$event->setAttributes([
-			'purged_at' => $this->getDateTime(),
+			'purgedAt' => $this->getDateTime(),
 			'paths' => $paths
 		]);
 
 		$event->save();
 	}
 
-	public function getDateTime()
+	public function getDateTime($setStamp = null)
 	{
-		$dt = new DateTime();
-		$dt->setTimezone(new \DateTimeZone(craft()->getTimeZone()));
-
-		return $dt;
+		return new DateTime($setStamp ? $setStamp : 'now', new \DateTimeZone(craft()->getTimeZone()));
 	}
 
 	public function updateRootPath($path)
@@ -199,7 +213,7 @@ class PrestoService extends BaseApplicationComponent
 	public function getRelatedTemplateCaches($elementIds)
 	{
 		return craft()->db->createCommand()
-			->select('DISTINCT(cacheKey)')
+			->selectDistinct('cacheKey')
 			->from('templatecaches as caches')
 			->join(
 				'templatecacheelements as elements',
