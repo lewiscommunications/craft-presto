@@ -11,7 +11,7 @@ class Presto_PrestoCachePurgeRecord extends BaseRecord
 	protected function defineAttributes()
 	{
 		return [
-			'purged_at' => [
+			'purgedAt' => [
 				AttributeType::DateTime,
 				'required' => true
 			],
@@ -26,7 +26,7 @@ class Presto_PrestoCachePurgeRecord extends BaseRecord
 	{
 		return [
 			[
-				'columns' => 'purged_at',
+				'columns' => 'purgedAt',
 				'unique' => true
 			]
 		];
