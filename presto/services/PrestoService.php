@@ -199,15 +199,16 @@ class PrestoService extends BaseApplicationComponent
 	public function getRelatedTemplateCaches($elementIds)
 	{
 		return craft()->db->createCommand()
-			->select('cacheKey')
+			->select('DISTINCT(cacheKey)')
 			->from('templatecaches as caches')
 			->join(
 				'templatecacheelements as elements',
 				'caches.id = elements.cacheId'
 			)
 			->where(array(
-				'elements.elementId' => is_array($elementIds) ?
-					implode(',', $elementIds) : $elementIds
+				'in',
+				'elements.elementId',
+				$elementIds
 			))
 			->queryAll();
 	}
