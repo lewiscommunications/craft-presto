@@ -5,7 +5,7 @@ class Presto_PrestoCachePurgeRecord extends BaseRecord
 {
 	public function getTableName()
 	{
-		return 'prestocachepurge';
+		return 'presto_cachepurge';
 	}
 
 	protected function defineAttributes()
