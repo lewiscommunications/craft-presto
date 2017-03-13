@@ -18,7 +18,7 @@ class PrestoCommand extends BaseCommand
 		if (! $lastUpdated) {
 			craft()->presto->purgeEntireCache();
 		} else {
-			$lastUpdated = new DateTime($lastUpdated, new \DateTimeZone(craft()->getTimeZone()));
+			$lastUpdated = craft()->presto->getDateTime($lastUpdated);
 
 			$paths = craft()->presto->getPurgeEvents($lastUpdated);
 
