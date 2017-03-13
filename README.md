@@ -32,9 +32,9 @@ Presto lets Craft do the heavy lifting of calculating the elements within the te
 Note that the *entirety* of your template logic *must* be wrapped by the `cache` tags. In addition, it is recommended that you add the `globally` tag so that Craft does not overload the cache (i.e. query string requests).
 
 ```twig
-{% cache globally using key craft.presto.cache if 
-	conf.cacheEnabled is defined and 
-	conf.cacheEnabled and cacheDisabled is not defined 
+{% cache globally using key craft.presto.cache if
+	conf.cacheEnabled is defined and
+	conf.cacheEnabled and cacheDisabled is not defined
 %}
 	{# Template Logic #}
 {% endcache %}
@@ -138,6 +138,10 @@ Change the root public directory. Default: `$_SERVER['DOCUMENT_ROOT']`
 3. Click the Install button on the Presto entry.
 4. Optionally change the default cache path in the Presto settings.
 	* Note that you should exclude cache directory content from version control.
+
+## Updating
+
+When updating from Presto 0.5.0 or earlier, go to the Presto plugin settings and click `Save` in order to regenerate stored settings.
 
 ## License
 
