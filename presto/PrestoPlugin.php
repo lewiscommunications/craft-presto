@@ -75,10 +75,6 @@ class PrestoPlugin extends BasePlugin
 			'cachePath' => array(
 				AttributeType::String,
 				'default' => '/cache'
-			),
-			'purgeCache' => array(
-				AttributeType::DateTime,
-				'default' => (new DateTime())->mySqlDateTime()
 			)
 		);
 	}
@@ -121,6 +117,14 @@ class PrestoPlugin extends BasePlugin
 	}
 
 	/**
+	 * Ensure rootPath gets stored with the plugin settings
+	 */
+	public function onAfterInstall()
+	{
+		$this->updateSettings();
+	}
+
+	/**
 	 * Process element before saving
 	 *
 	 * @param Event $event
@@ -135,6 +139,39 @@ class PrestoPlugin extends BasePlugin
 	}
 
 	/**
+	 * Triggers purging the Presto cache, checking whether to trigger immediate or cron
+	 *
+	 * @param bool $all
+	 * @param array $caches
+	 */
+	private function triggerPurge($all = false, $caches = [])
+	{
+		$immediate = craft()->config->get('purgeMethod', 'presto') === 'immediate';
+
+		if ($all) {
+			craft()->templateCache->deleteAllCaches();
+
+			if ($immediate) {
+				craft()->presto->purgeEntireCache();
+			} else {
+				craft()->presto->storePurgeAllEvent();
+			}
+		} elseif (count($caches) || $this->caches) {
+			$caches = count($caches) ? $caches : $this->caches;
+
+			if ($immediate) {
+				craft()->presto->purgeCache(
+					craft()->presto->formatPaths($caches)
+				);
+			} else {
+				craft()->presto->storePurgeEvent(
+					craft()->presto->formatPaths($caches)
+				);
+			}
+		}
+	}
+
+	/**
 	 * Process element on save
 	 *
 	 * @param Event $event
@@ -142,30 +179,9 @@ class PrestoPlugin extends BasePlugin
 	public function saveElement(Event $event)
 	{
 		// If a new element is saved, bust the entire cache
-		$purgeAll = $event->params['isNewElement'];
-		$purgeImmediate = craft()->config->get('purgeMethod', 'presto') === 'immediate';
-
-		if ($purgeAll) {
-			craft()->templateCache->deleteAllCaches();
-
-			if ($purgeImmediate) {
-				craft()->presto->purgeEntireCache();
-			} else {
-				craft()->presto->storePurgeAllEvent();
-			}
-		} elseif ($this->caches) {
-			if ($purgeImmediate) {
-				craft()->presto->purgeCache(
-					craft()->presto->formatPaths($this->caches)
-				);
-			} else {
-				craft()->presto->storePurgeEvent(
-					craft()->presto->formatPaths($this->caches)
-				);
-			}
-		}
-
-		$this->updateSettings();
+		$this->triggerPurge(
+			$event->params['isNewElement']
+		);
 	}
 
 	/**
@@ -179,17 +195,7 @@ class PrestoPlugin extends BasePlugin
 			$event->params['elementIds']
 		);
 
-		if (craft()->config->get('purgeMethod', 'presto') === 'cron') {
-			craft()->presto->storePurgeEvent(
-				craft()->presto->formatPaths($caches)
-			);
-		} else {
-			craft()->presto->purgeCache(
-				craft()->presto->formatPaths($caches)
-			);
-		}
-
-		$this->updateSettings();
+		$this->triggerPurge(false, $caches);
 	}
 
 	/**
@@ -205,26 +211,9 @@ class PrestoPlugin extends BasePlugin
 			);
 
 			if (count($caches)) {
-				// If there are caches to bust, target them specifically
-				if (craft()->config->get('purgeMethod', 'presto') === 'cron') {
-					craft()->presto->storePurgeEvent(
-						craft()->presto->formatPaths($caches)
-					);
-				} else {
-					craft()->presto->purgeCache(
-						craft()->presto->formatPaths($caches)
-					);
-				}
+				$this->triggerPurge(false, $caches);
 			} else {
-				// Otherwise, clear the entire cache since the new/enabled
-				// elements won't be part of the existing cache
-				craft()->templateCache->deleteAllCaches();
-
-				if (craft()->config->get('purgeMethod', 'presto') === 'cron') {
-					craft()->presto->storePurgeAllEvent();
-				} else {
-					craft()->presto->purgeEntireCache();
-				}
+				$this->triggerPurge(true);
 			}
 		}
 	}
@@ -240,16 +229,6 @@ class PrestoPlugin extends BasePlugin
 			$event->params['element']->id
 		);
 
-		if (craft()->config->get('purgeMethod', 'presto') === 'cron') {
-			craft()->presto->storePurgeEvent(
-				craft()->presto->formatPaths($caches)
-			);
-		} else {
-			craft()->presto->purgeCache(
-				craft()->presto->formatPaths($caches)
-			);
-		}
-
-		$this->updateSettings();
+		$this->triggerPurge(false, $caches);
 	}
 }
