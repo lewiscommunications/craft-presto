@@ -78,7 +78,6 @@ Your host needs to check for matching static files before Craft handles the requ
 ```apache
 # Check Presto cache
 RewriteCond %{REQUEST_FILENAME} !\.(css|eot|gif|ico|jpe?g|otf|png|svg|ttf|webp|woff2?)$ [NC]
-RewriteCond %{HTTP:X-PJAX} true
 RewriteCond %{REQUEST_METHOD} GET
 RewriteCond %{DOCUMENT_ROOT}/cache/%{HTTP_HOST}/presto%{REQUEST_URI}/index.html -f
 RewriteRule .* /cache/%{HTTP_HOST}/presto%{REQUEST_URI}/index.html [L,E=nocache:1]]
@@ -90,10 +89,10 @@ If you add a cache group, you'll need to add additional configuration. Below is 
 
 ```apache
 RewriteCond %{REQUEST_FILENAME} !\.(css|eot|gif|ico|jpe?g|otf|png|svg|ttf|webp|woff2?)$ [NC]
-RewriteCond %{HTTP:X-PJAX} !true
+RewriteCond %{HTTP:X-PJAX} true
 RewriteCond %{REQUEST_METHOD} GET
-RewriteCond %{DOCUMENT_ROOT}/cache/%{HTTP_HOST}/presto%{REQUEST_URI}/index.html -f
-RewriteRule .* /cache/%{HTTP_HOST}/presto%{REQUEST_URI}/index.html [L,E=nocache:1]]
+RewriteCond %{DOCUMENT_ROOT}/cache/%{HTTP_HOST}/presto/pjax%{REQUEST_URI}/index.html -f
+RewriteRule .* /cache/%{HTTP_HOST}/presto/pjax%{REQUEST_URI}/index.html [L,E=nocache:1]]
 ```
 
 ## Directory Structure
