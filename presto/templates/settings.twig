@@ -1,1 +1,11 @@
-{% redirect 'presto' %}
+{% import '_includes/forms' as forms %}
+
+<input type="hidden" name="rootPath" value="{{ craft.config.get('rootPath', 'presto') }}">
+
+{{ forms.textField({
+	label: 'Cache Location'|t,
+	instructions: 'Relative path to the cache directory from the public root.'|t,
+	name: 'cachePath',
+	value: settings.cachePath,
+	first: true
+}) }}

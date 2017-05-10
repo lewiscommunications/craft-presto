@@ -48,23 +48,6 @@ class PrestoPlugin extends BasePlugin
 		return 'https://raw.githubusercontent.com/caddis/craft-presto/master/releases.json';
 	}
 
-	public function getSettingsUrl()
-	{
-		return 'presto';
-	}
-
-	public function registerCpRoutes()
-	{
-		return [
-			'presto' => ['action' => 'presto/index']
-		];
-	}
-
-	public function getSettingsHtml()
-	{
-		return craft()->templates->render('presto/settings');
-	}
-
 	protected function defineSettings()
 	{
 		return [
@@ -77,6 +60,13 @@ class PrestoPlugin extends BasePlugin
 				'default' => '/cache'
 			]
 		];
+	}
+
+	public function getSettingsHtml()
+	{
+		return craft()->templates->render('presto/settings', [
+			'settings' => $this->getSettings()
+		]);
 	}
 
 	public function onAfterInstall()
