@@ -48,21 +48,26 @@ class PrestoPlugin extends BasePlugin
 		return 'https://raw.githubusercontent.com/caddis/craft-presto/master/releases.json';
 	}
 
-	public function getSettingsHtml()
+	public function getSettingsUrl()
 	{
-		return craft()->templates->render('presto/settings', [
-			'settings' => $this->getSettings()
-		]);
+		return 'presto';
+	}
+
+	public function hasCpSection()
+	{
+		return true;
 	}
 
 	public function registerCpRoutes()
 	{
-		// Point the purge action to our presto controller
 		return [
-			'settings/plugins/presto/purge' => [
-				'action' => 'presto/purgeCache'
-			]
+			'presto' => ['action' => 'presto/index']
 		];
+	}
+
+	public function getSettingsHtml()
+	{
+		return craft()->templates->render('presto/settings');
 	}
 
 	protected function defineSettings()
@@ -79,13 +84,15 @@ class PrestoPlugin extends BasePlugin
 		];
 	}
 
+	public function onAfterInstall()
+	{
+		$this->updateSettings();
+	}
+
 	private function updateSettings()
 	{
 		craft()->plugins->savePluginSettings(
-			$this,
-			[
-				'rootPath' => craft()->config->get('rootPath', 'presto')
-			]
+			$this, ['rootPath' => craft()->config->get('rootPath', 'presto')]
 		);
 	}
 
@@ -114,14 +121,6 @@ class PrestoPlugin extends BasePlugin
 			craft()->on('elements.beforeDeleteElements', [$this, 'beforeDeleteElements']);
 			craft()->on('structures.beforeMoveElement', [$this, 'beforeMoveElement']);
 		}
-	}
-
-	/**
-	 * Ensure rootPath gets stored with the plugin settings
-	 */
-	public function onAfterInstall()
-	{
-		$this->updateSettings();
 	}
 
 	/**
