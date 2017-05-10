@@ -12,6 +12,11 @@ class PrestoCommand extends BaseCommand
 			craft()->plugins->getPlugin('presto')->getSettings()['rootPath']
 		);
 
+		// Does the purge log file exist?
+		if (! IOHelper::fileExists($this->getUpdatePath())) {
+			IOHelper::createFile($this->getUpdatePath());
+		}
+
 		$lastUpdated = $this->getUpdateTime();
 		$this->writeUpdateTime();
 

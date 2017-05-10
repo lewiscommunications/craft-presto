@@ -13,6 +13,6 @@ class PrestoController extends BaseController
 		craft()->presto->storePurgeAllEvent();
 		craft()->userSession->setNotice(Craft::t('Cache purge scheduled.'));
 
-		return $this->redirect(UrlHelper::getCpUrl('presto'));
+		return $this->redirect(UrlHelper::getCpUrl('settings/plugins/presto'));
 	}
 }
