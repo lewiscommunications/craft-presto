@@ -86,11 +86,6 @@ class PrestoPlugin extends BasePlugin
 
 	public function onAfterInstall()
 	{
-		$this->updateSettings();
-	}
-
-	private function updateSettings()
-	{
 		craft()->plugins->savePluginSettings(
 			$this, ['rootPath' => craft()->config->get('rootPath', 'presto')]
 		);
