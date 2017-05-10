@@ -18,7 +18,6 @@ class m170311_030749_presto_createPrestoPurgeTable extends BaseMigration
 		// Update rootPath setting
 		craft()->plugins->savePluginSettings(
 			craft()->plugins->getPlugin('Presto'), [
-				'cachePath' => craft()->request->getPost('cachePath'),
 				'rootPath' => craft()->config->get('rootPath', 'presto')
 			]
 		);

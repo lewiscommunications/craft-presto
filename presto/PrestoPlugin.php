@@ -53,11 +53,6 @@ class PrestoPlugin extends BasePlugin
 		return 'presto';
 	}
 
-	public function hasCpSection()
-	{
-		return true;
-	}
-
 	public function registerCpRoutes()
 	{
 		return [
