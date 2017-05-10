@@ -138,10 +138,6 @@ Change the root public directory. Default: `$_SERVER['DOCUMENT_ROOT']`
 4. Optionally change the default cache path in the Presto settings.
 	* Note that you should exclude cache directory content from version control.
 
-## Updating
-
-When updating from Presto 0.5.0 or earlier, go to the Presto plugin settings and click `Save` in order to regenerate stored settings.
-
 ## License
 
 Copyright 2016 [Lewis Communications, LLC](http://www.lewiscommunications.com). Licensed under the [Apache License, Version 2.0](https://github.com/caddis/presto/blob/master/LICENSE).
