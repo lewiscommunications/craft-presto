@@ -77,11 +77,22 @@ class PrestoService extends BaseApplicationComponent
 		$event->save();
 	}
 
+	/**
+	 * Get date time
+	 *
+	 * @param null $setStamp
+	 * @return DateTime
+	 */
 	public function getDateTime($setStamp = null)
 	{
 		return new DateTime($setStamp ? $setStamp : 'now', new \DateTimeZone(craft()->getTimeZone()));
 	}
 
+	/**
+	 * Update root path
+	 *
+	 * @param string $path
+	 */
 	public function updateRootPath($path)
 	{
 		if (IOHelper::folderExists($path)) {
