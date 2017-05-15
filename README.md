@@ -32,9 +32,9 @@ Presto lets Craft do the heavy lifting of calculating the elements within the te
 Note that the *entirety* of your template logic *must* be wrapped by the `cache` tags. In addition, it is recommended that you add the `globally` tag so that Craft does not overload the cache (i.e. query string requests).
 
 ```twig
-{% cache globally using key craft.presto.cache if 
-	conf.cacheEnabled is defined and 
-	conf.cacheEnabled and cacheDisabled is not defined 
+{% cache globally using key craft.presto.cache if
+	conf.cacheEnabled is defined and
+	conf.cacheEnabled and cacheDisabled is not defined
 %}
 	{# Template Logic #}
 {% endcache %}
@@ -106,10 +106,29 @@ Presto resolves subdomain hosts automatically. Static html files are created ins
 			- blog
 				- index.html
 
+## Load Balancer/Scaling
+
+When running Presto in an environment that might spin up additional server instances, standard cache busting will only clear the cache on a single instance. Presto provides a purgeMethod setting which allows you to switch from "immediate" to "cron". As long as the cron job is set up on each instance, cache busting should then take place across your instances.
+
+To use this method, create your "config/presto.php" file and set "purgeMethod" to "cron".
+
+### Crontab
+
+You will also need to set up a cron job to run the `presto check` console command. The following example will run it every 10 minutes.
+
+```
+*/10 * * * *  /var/www/craft/app/etc/console/yiic presto check
+```
+
 ## Config
+
+Copy "presto/config.php" to "craft/config/presto.php" and adjust as needed.
 
 **rootPath:**<br>
 Change the root public directory. Default: `$_SERVER['DOCUMENT_ROOT']`
+
+**purgeMethod:**<br>
+"immediate" or "cron". Changes how cache busting should be handled: immediately when Craft busts its cache, or via a cron job. Default: `immediate`
 
 ## Installation
 
@@ -121,4 +140,4 @@ Change the root public directory. Default: `$_SERVER['DOCUMENT_ROOT']`
 
 ## License
 
-Copyright 2016 [Caddis Interactive, LLC](https://www.caddis.co). Licensed under the [Apache License, Version 2.0](https://github.com/caddis/presto/blob/master/LICENSE).
+Copyright 2016 [Lewis Communications, LLC](http://www.lewiscommunications.com). Licensed under the [Apache License, Version 2.0](https://github.com/caddis/presto/blob/master/LICENSE).

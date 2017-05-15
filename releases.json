@@ -1,0 +1,18 @@
+[
+	{
+		"version": "0.5.0",
+		"downloadUrl": "https://github.com/caddis/craft-presto/archive/0.5.0.zip",
+		"date": "2016-10-19T20:39:16",
+		"notes": [
+			"[Added] Initial release."
+		]
+	},
+	{
+		"version": "0.6.0",
+		"downloadUrl": "https://github.com/caddis/craft-presto/archive/0.6.0.zip",
+		"date": "2017-05-10T20:41:59",
+		"notes": [
+			"[Added] Cron cache purging for load balancer implementations."
+		]
+	}
+]

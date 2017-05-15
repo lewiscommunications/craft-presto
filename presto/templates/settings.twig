@@ -1,8 +1,23 @@
 {% import '_includes/forms' as forms %}
 
+<input type="hidden" name="rootPath" value="{{ craft.config.get('rootPath', 'presto') }}">
+
 {{ forms.textField({
 	label: 'Cache Location'|t,
 	instructions: 'Relative path to the cache directory from the public root.'|t,
 	name: 'cachePath',
-	value: settings.cachePath
+	value: settings.cachePath,
+	first: true
 }) }}
+
+{% if craft.config.get('purgeMethod', 'presto') == 'cron' %}
+	<div class="field">
+		<div class="heading">
+			<label>Purge Cache</label>
+			<div class="instructions">
+				Schedule purging of Presto static cache. Be sure you first clear the main Craft cache to regenerate template caches.
+			</div>
+		</div>
+		<a class="btn submit" href="{{ actionUrl('presto/PurgeCache') }}">Purge Cache</a>
+	</div>
+{% endif %}

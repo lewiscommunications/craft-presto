@@ -13,24 +13,112 @@ class PrestoService extends BaseApplicationComponent
 	}
 
 	/**
+	 * @param $dateTime
+	 * @return array
+	 */
+	public function getPurgeEvents($dateTime)
+	{
+		$paths = [];
+
+		$events = Presto_PrestoCachePurgeRecord::model()
+			->findAll('purgedAt >= :dateTime', [
+				':dateTime' => $dateTime->mySqlDateTime()
+			]);
+
+		foreach ($events as $event) {
+			if ($event->paths === 'all') {
+				return [
+					'all'
+				];
+			}
+
+			$paths = array_merge($paths, unserialize($event->paths));
+		}
+
+		sort($paths);
+
+		return $paths;
+	}
+
+	/**
+	 * Record specific cache paths that need to be busted
+	 *
+	 * @param array $paths
+	 */
+	public function storePurgeEvent($paths = [])
+	{
+		if (count($paths)) {
+			$this->storeEvent(serialize($paths));
+		}
+	}
+
+	/**
+	 * Record the need to bust the entire cache
+	 */
+	public function storePurgeAllEvent()
+	{
+		$this->storeEvent('all');
+	}
+
+	/**
+	 * Store recorded events for the static cache
+	 *
+	 * @param $paths
+	 */
+	private function storeEvent($paths)
+	{
+		$event = new Presto_PrestoCachePurgeRecord;
+
+		$event->setAttributes([
+			'purgedAt' => $this->getDateTime(),
+			'paths' => $paths
+		]);
+
+		$event->save();
+	}
+
+	/**
+	 * Get date time
+	 *
+	 * @param null $setStamp
+	 * @return DateTime
+	 */
+	public function getDateTime($setStamp = null)
+	{
+		return new DateTime($setStamp ? $setStamp : 'now', new \DateTimeZone(craft()->getTimeZone()));
+	}
+
+	/**
+	 * Update root path
+	 *
+	 * @param string $path
+	 */
+	public function updateRootPath($path)
+	{
+		if (IOHelper::folderExists($path)) {
+			$this->rootPath = $path;
+		}
+	}
+
+	/**
 	 * Purge cached files by path
 	 *
 	 * @param array $paths
 	 */
-	public function purgeCache($paths = array())
+	public function purgeCache($paths = [])
 	{
 		if (count($paths)) {
 			foreach ($paths as $path) {
 				$url = explode('|', $path, 2);
 
 				$targetPath = IOHelper::folderExists(
-					$this->normalizePath(implode('/', array(
+					$this->normalizePath(implode('/', [
 						$this->rootPath,
 						$this->settings->cachePath,
 						$url[0],
 						'presto',
 						str_replace('home', '', $url[1])
-					)))
+					]))
 				);
 
 				$targetFile = IOHelper::fileExists($targetPath . '/index.html');
@@ -69,15 +157,15 @@ class PrestoService extends BaseApplicationComponent
 	 * @param string $html
 	 * @param array $config
 	 */
-	public function writeCache($host, $path, $html, $config = array())
+	public function writeCache($host, $path, $html, $config = [])
 	{
 		if (! isset($config['static']) || $config['static'] !== false) {
-			$pathSegments = array(
+			$pathSegments = [
 				$this->rootPath,
 				$this->settings->cachePath,
 				$host,
 				'presto'
-			);
+			];
 
 			if (isset($config['group'])) {
 				$pathSegments[] = $config['group'];
@@ -136,16 +224,17 @@ class PrestoService extends BaseApplicationComponent
 	public function getRelatedTemplateCaches($elementIds)
 	{
 		return craft()->db->createCommand()
-			->select('cacheKey')
+			->selectDistinct('cacheKey')
 			->from('templatecaches as caches')
 			->join(
 				'templatecacheelements as elements',
 				'caches.id = elements.cacheId'
 			)
-			->where(array(
-				'elements.elementId' => is_array($elementIds) ?
-					implode(',', $elementIds) : $elementIds
-			))
+			->where([
+				'in',
+				'elements.elementId',
+				$elementIds
+			])
 			->queryAll();
 	}
 
@@ -157,7 +246,7 @@ class PrestoService extends BaseApplicationComponent
 	 */
 	public function formatPaths($caches)
 	{
-		$paths = array();
+		$paths = [];
 
 		foreach ($caches as $cache) {
 			$paths[] = $cache['cacheKey'];

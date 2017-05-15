@@ -4,7 +4,7 @@ namespace Craft;
 class PrestoPlugin extends BasePlugin
 {
 	private $name = 'Presto';
-	private $version = '0.5.0';
+	private $version = '0.6.0';
 	private $description = 'Static file extension for the native Craft cache.';
 	private $caches;
 
@@ -20,7 +20,7 @@ class PrestoPlugin extends BasePlugin
 
 	public function getSchemaVersion()
 	{
-		return '1.0.0';
+		return '1.1.0';
 	}
 
 	public function getDescription()
@@ -30,12 +30,12 @@ class PrestoPlugin extends BasePlugin
 
 	public function getDeveloper()
 	{
-		return 'Caddis';
+		return 'Lewis Communications';
 	}
 
 	public function getDeveloperUrl()
 	{
-		return 'https://www.caddis.co';
+		return 'http://www.lewiscommunications.com';
 	}
 
 	public function getDocumentationUrl()
@@ -48,31 +48,45 @@ class PrestoPlugin extends BasePlugin
 		return 'https://raw.githubusercontent.com/caddis/craft-presto/master/releases.json';
 	}
 
-	public function getSettingsHtml()
-	{
-		return craft()->templates->render('presto/settings', array(
-			'settings' => $this->getSettings()
-		));
-	}
-
 	protected function defineSettings()
 	{
-		return array(
-			'cachePath' => array(
+		return [
+			'rootPath' => [
+				AttributeType::String,
+				'default' => craft()->config->get('rootPath', 'presto')
+			],
+			'cachePath' => [
 				AttributeType::String,
 				'default' => '/cache'
-			)
+			]
+		];
+	}
+
+	public function getSettingsHtml()
+	{
+		return craft()->templates->render('presto/settings', [
+			'settings' => $this->getSettings()
+		]);
+	}
+
+	public function onAfterInstall()
+	{
+		craft()->plugins->savePluginSettings(
+			$this, ['rootPath' => craft()->config->get('rootPath', 'presto')]
 		);
 	}
 
 	public function registerCachePaths()
 	{
-		$cachePath = craft()->config->get('rootPath', 'presto') .
-			$this->getSettings()->cachePath;
+		// Don't add the Presto path if we're purging via the cron
+		if (craft()->config->get('purgeMethod', 'presto') === 'immediate') {
+			$cachePath = craft()->config->get('rootPath', 'presto') .
+				$this->getSettings()->cachePath;
 
-		return array(
-			$cachePath => $this->name . ' ' . Craft::t('caches')
-		);
+			return [
+				$cachePath => $this->name . ' ' . Craft::t('caches')
+			];
+		}
 	}
 
 	/**
@@ -81,11 +95,11 @@ class PrestoPlugin extends BasePlugin
 	public function init()
 	{
 		if (craft()->request->isCpRequest()) {
-			craft()->on('elements.saveElement', array($this, 'saveElement'));
-			craft()->on('elements.beforePerformAction', array($this, 'beforePerformAction'));
-			craft()->on('elements.beforeSaveElement', array($this, 'beforeSaveElement'));
-			craft()->on('elements.beforeDeleteElements', array($this, 'beforeDeleteElements'));
-			craft()->on('structures.beforeMoveElement', array($this, 'beforeMoveElement'));
+			craft()->on('elements.saveElement', [$this, 'saveElement']);
+			craft()->on('elements.beforePerformAction', [$this, 'beforePerformAction']);
+			craft()->on('elements.beforeSaveElement', [$this, 'beforeSaveElement']);
+			craft()->on('elements.beforeDeleteElements', [$this, 'beforeDeleteElements']);
+			craft()->on('structures.beforeMoveElement', [$this, 'beforeMoveElement']);
 		}
 	}
 
@@ -104,22 +118,49 @@ class PrestoPlugin extends BasePlugin
 	}
 
 	/**
+	 * Triggers purging the Presto cache, checking whether to trigger immediate or cron
+	 *
+	 * @param bool $all
+	 * @param array $caches
+	 */
+	private function triggerPurge($all = false, $caches = [])
+	{
+		$immediate = craft()->config->get('purgeMethod', 'presto') === 'immediate';
+
+		if ($all) {
+			craft()->templateCache->deleteAllCaches();
+
+			if ($immediate) {
+				craft()->presto->purgeEntireCache();
+			} else {
+				craft()->presto->storePurgeAllEvent();
+			}
+		} elseif (count($caches) || $this->caches) {
+			$caches = count($caches) ? $caches : $this->caches;
+
+			if ($immediate) {
+				craft()->presto->purgeCache(
+					craft()->presto->formatPaths($caches)
+				);
+			} else {
+				craft()->presto->storePurgeEvent(
+					craft()->presto->formatPaths($caches)
+				);
+			}
+		}
+	}
+
+	/**
 	 * Process element on save
 	 *
 	 * @param Event $event
 	 */
 	public function saveElement(Event $event)
 	{
-		if ($event->params['isNewElement']) {
-			// If a new element is saved, bust the entire cache
-			craft()->templateCache->deleteAllCaches();
-			craft()->presto->purgeEntireCache();
-		} elseif ($this->caches) {
-			// Otherwise, target specific caches
-			craft()->presto->purgeCache(
-				craft()->presto->formatPaths($this->caches)
-			);
-		}
+		// If a new element is saved, bust the entire cache
+		$this->triggerPurge(
+			$event->params['isNewElement']
+		);
 	}
 
 	/**
@@ -133,7 +174,7 @@ class PrestoPlugin extends BasePlugin
 			$event->params['elementIds']
 		);
 
-		craft()->presto->purgeCache(craft()->presto->formatPaths($caches));
+		$this->triggerPurge(false, $caches);
 	}
 
 	/**
@@ -149,13 +190,9 @@ class PrestoPlugin extends BasePlugin
 			);
 
 			if (count($caches)) {
-				// If there are caches to bust, target them specifically
-				craft()->presto->purgeCache(craft()->presto->formatPaths($caches));
+				$this->triggerPurge(false, $caches);
 			} else {
-				// Otherwise, clear the entire cache since the new/enabled
-				// elements won't be part of the existing cache
-				craft()->templateCache->deleteAllCaches();
-				craft()->presto->purgeEntireCache();
+				$this->triggerPurge(true);
 			}
 		}
 	}
@@ -171,6 +208,6 @@ class PrestoPlugin extends BasePlugin
 			$event->params['element']->id
 		);
 
-		craft()->presto->purgeCache(craft()->presto->formatPaths($caches));
+		$this->triggerPurge(false, $caches);
 	}
 }
