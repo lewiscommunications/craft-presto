@@ -1,41 +1,25 @@
-![Presto](https://www.caddis.co/internal/repo/presto.svg)
+![Presto](logo.svg)
 
-Presto is a static file extension for the native [Craft cache](https://craftcms.com/docs/templating/cache). It works alongside standard Twig `{% cache %}` tag pairs and includes cache-busting features. Just like standard caching, Presto is automatic. Simply install, update your layouts, and then the cache will bust automatically as you create, update, or delete content within Craft.
+Presto is a static file extension for the native [Craft cache](https://craftcms.com/docs/templating/cache). It works alongside standard Twig `{% cache %}` tag pairs and includes cache-busting features. Just like standard caching, Presto is automatic. Simply install, update your layouts, and then the cache will bust automatically as you create, update, or delete content.
 
-#### Quick Start Guide
+## Setup Guide
 
-1. [Set up your general config](#getting-started)
-2. [Add cache tags to your layout templates](#template)
-3. [Optionally disable error templates](#disable-caching-on-individual-templates)
-4. [Configure your server](#server)
+### Step 1 -  Turn off element query caching
 
-## Getting Started
-
-In order to take full advantage of Presto's static caching, turn off [element query caching](https://craftcms.com/docs/config-settings#cacheElementQueries) in your general config file. This will keep the `DeleteStaleTemplateCaches` task from running in the admin. Since Presto busts the entire cache when a new element is saved, element query caching is not necessary.
+Turn off [element query caching](https://craftcms.com/docs/config-settings#cacheElementQueries) in your general config file. This will stop the `DeleteStaleTemplateCaches` task from running in the admin. Since Presto busts the entire cache when a new element is saved, element query caching is not necessary.
 
 ```php
 'cacheElementQueries' => false
 ```
 
-#### Multi-Enviroment Setup
-
-In the [template example](#template) below, `cacheEnabled` represents a general config variable that you can use to enable or disable caching globally. This is useful if you need to disable caching for your local development environment.
-
-```php
-`cacheEnabled` => true
-```
-
-## Template
+### Step 2 - Add cache tags
 
 Presto lets Craft do the heavy lifting of calculating the elements within the template. As a result, all you need to do in your templates is pass the cache key returned from `craft.presto.cache` to the native cache tag pair. Presto will return a cache key that includes the host, group (if one is set), and path.
 
 Note that the *entirety* of your template logic *must* be wrapped by the `cache` tags. In addition, it is recommended that you add the `globally` tag so that Craft does not overload the cache (i.e. query string requests).
 
 ```twig
-{% cache globally using key craft.presto.cache if
-	conf.cacheEnabled is defined and
-	conf.cacheEnabled and cacheDisabled is not defined
-%}
+{% cache globally using key craft.presto.cache %}
 	{# Template Logic #}
 {% endcache %}
 ```
@@ -49,29 +33,14 @@ Note that the *entirety* of your template logic *must* be wrapped by the `cache`
 }) %}
 ```
 
-**group**<br>
-When set the requested page will write into a sub-folder within the top-level cache directory. This is useful for pjax implementations where you load a separate template.
+| Parameter | Type    | Description                                                                                                                                                                  |
+| --------- | ------- | -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| group     | string  | When set, the requested page will write into a sub-folder within the top-level cache directory. This is useful for pjax implementations where you load a separate template.  |
+| static    | boolean | Setting to false will disable static caching for the request and fall back to native caching logic. The cache key will still be returned, but a static file won't be written.|
 
-**static**<br>
-Setting to false will disable static caching for the request and fall back to native caching logic. The cache key will still be returned, only a static file won't be written.
+### Step 3 - Configure your server
 
-## Disable Caching on Individual Templates
-
-Keep in mind that when using Presto the `for`, `until`, `if`, and `unless` parameters won't be respected on each request once the static html file is created. In the [template](#template) example above, `cacheDisabled` represents a Twig variable you can set to selectively disable caching on certain templates (i.e. 404 templates).
-
-```twig
-{% extends '_layouts/master' %}
-
-{% set cacheDisabled = true %}
-
-{% block content %}
-	{# page content #}
-{% endblock %}
-```
-
-## Server
-
-Your host needs to check for matching static files before Craft handles the request. If the file exists it's served statically. This block should typically be set immediately preceding the primary Craft "index.php" rewrite. Use these examples as a general guideline, your implementation may vary.
+Your host needs to check for matching static files before Craft handles the request. If the file exists, it's served statically. This block should typically be set immediately preceding the primary Craft "index.php" rewrite. Use these examples as a general guideline, your implementation may vary.
 
 #### Apache
 
@@ -95,40 +64,97 @@ RewriteCond %{DOCUMENT_ROOT}/cache/%{HTTP_HOST}/presto/pjax%{REQUEST_URI}/index.
 RewriteRule .* /cache/%{HTTP_HOST}/presto/pjax%{REQUEST_URI}/index.html [L,E=nocache:1]]
 ```
 
+## Disable Caching
+
+### Multi-enviroment
+
+If you use a [multi-environment config](https://craftcms.com/docs/multi-environment-configs), set an arbitrary cache variable in your general config. Override this variable on environments where you don't want static caching (e.g. local development).
+
+**General Config Variable**
+
+```php
+`cacheEnabled` => true
+```
+
+**Cache Tag**
+
+```twig
+{% cache globally using key craft.presto.cache if conf.cacheEnabled is defined and conf.cacheEnabled %}
+	{# Template Logic #}
+{% endcache %}
+```
+
+### Individual Templates
+
+When using Presto the `for`, `until`, `if`, and `unless` parameters won't be respected on each request once the static html file is created. To disable the cache on individual templates, set a variable on the main cache tag. Override that variable on each template where you don't want static caching.
+
+**Cache Tag**
+
+```twig
+{% cache globally using key craft.presto.cache if cacheEnabled is defined ? cacheEnabled : true %}
+    <!doctype html>
+    <html>
+        <body>
+            {{ block('content') }}
+        </body>
+    </html>
+{% endcache %}
+```
+
+**Cache Template Override**
+
+```twig
+{% extends '[layout-template-path]' %}
+
+{# Disable caching on this page #}
+{% set cacheEnabled = false %}
+
+{% block content %}
+	{# page content #}
+{% endblock %}
+```
+
 ## Directory Structure
 
 Presto resolves subdomain hosts automatically. Static html files are created inside a directory named after the requested host (i.e. coolwebsite.com, sub.coolwebsite.com). An additional directory called "presto" is created inside each host directory to avoid .htaccess filename conflicts. See below for an example cache file directory structure:
 
+```
 - cache
 	- coolwebsite.com
 		- presto
 			- index.html
 			- blog
 				- index.html
-
-## Load Balancer/Scaling
-
-When running Presto in an environment that might spin up additional server instances, standard cache busting will only clear the cache on a single instance. Presto provides a purgeMethod setting which allows you to switch from "immediate" to "cron". As long as the cron job is set up on each instance, cache busting should then take place across your instances.
-
-To use this method, create your "config/presto.php" file and set "purgeMethod" to "cron".
-
-### Crontab
-
-You will also need to set up a cron job to run the `presto check` console command. The following example will run it every 10 minutes.
-
 ```
+
+## Purging the Cache
+
+To clear the Presto cache, navigate to Presto plugin settings page (*/cms/settings/plugins/presto*) and click "Purge Cache" ([immediate](#immediate-purge)) or "Schedule Purge" ([cron](#cron-purge)).
+
+## Purge Method
+
+Presto provides two purge methods: immediate and cron.
+
+### Immediate Purge
+
+By default, Presto will purge the static cache and all related Craft template caches immediately. This only occurs in the server instance where the cache was cleared.
+
+### Cron Purge
+
+If you run Presto in an environment that spins up multiple server instances, set the [purgeMethod config](#config) to "cron". Set up a cron job on each server instance that runs the `presto check` [console command](https://craftcms.com/classreference/consolecommands/BaseCommand). The following example will run it every 10 minutes.
+
+```bash
 */10 * * * *  /var/www/craft/app/etc/console/yiic presto check
 ```
 
 ## Config
 
-Copy "presto/config.php" to "craft/config/presto.php" and adjust as needed.
+Create a "presto.php" in the config folder (*craft > config*) file and configure as needed.
 
-**rootPath:**<br>
-Change the root public directory. Default: `$_SERVER['DOCUMENT_ROOT']`
-
-**purgeMethod:**<br>
-"immediate" or "cron". Changes how cache busting should be handled: immediately when Craft busts its cache, or via a cron job. Default: `immediate`
+| Parameter   | Type   | Default                     | Description                                                                                                                              |
+| ----------- | ------ | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| purgeMethod | string | `immediate`                 | Changes how cache busting should be handled: immediately when Craft busts its cache, or via a cron job. Options: `immediate` and `cron`. |
+| rootPath    | string | `$_SERVER['DOCUMENT_ROOT']` | Root public directory                                                                                                                    |
 
 ## Installation
 
@@ -140,4 +166,4 @@ Change the root public directory. Default: `$_SERVER['DOCUMENT_ROOT']`
 
 ## License
 
-Copyright 2016 [Lewis Communications, LLC](http://www.lewiscommunications.com). Licensed under the [Apache License, Version 2.0](https://github.com/caddis/presto/blob/master/LICENSE).
+Copyright 2017 [Lewis Communications, LLC](http://www.lewiscommunications.com). Licensed under the [Apache License, Version 2.0](LICENSE).

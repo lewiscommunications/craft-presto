@@ -4,14 +4,26 @@ namespace Craft;
 class PrestoController extends BaseController
 {
 	/**
-	 * Handle requests to schedule a cache purge
+	 * Purge cache
+	 *
+	 * @return null
 	 */
 	public function actionPurgeCache()
 	{
 		$this->requireAdmin();
+		$cron = craft()->config->get('purgeMethod', 'presto') === 'cron';
 
-		craft()->presto->storePurgeAllEvent();
-		craft()->userSession->setNotice(Craft::t('Cache purge scheduled.'));
+		if ($cron) {
+			craft()->presto->storePurgeAllEvent();
+		} else {
+			// Clear static cache
+			craft()->presto->purgeEntireCache();
+
+			// Clear db template cache
+			craft()->templateCache->deleteAllCaches();
+		}
+
+		craft()->userSession->setNotice(Craft::t($cron ? 'Cache purge scheduled.' : 'Cache purged.'));
 
 		return $this->redirect(UrlHelper::getCpUrl('settings/plugins/presto'));
 	}

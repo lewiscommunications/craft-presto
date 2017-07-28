@@ -76,19 +76,6 @@ class PrestoPlugin extends BasePlugin
 		);
 	}
 
-	public function registerCachePaths()
-	{
-		// Don't add the Presto path if we're purging via the cron
-		if (craft()->config->get('purgeMethod', 'presto') === 'immediate') {
-			$cachePath = craft()->config->get('rootPath', 'presto') .
-				$this->getSettings()->cachePath;
-
-			return [
-				$cachePath => $this->name . ' ' . Craft::t('caches')
-			];
-		}
-	}
-
 	/**
 	 * Bind element actions to Presto events
 	 */
