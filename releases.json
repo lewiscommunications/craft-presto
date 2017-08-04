@@ -14,5 +14,13 @@
 		"notes": [
 			"[Added] Added cron cache purging for load balancer implementations."
 		]
+	},
+	{
+		"version": "0.6.1",
+		"downloadUrl": "https://github.com/caddis/craft-presto/archive/0.6.1.zip",
+		"date": "2017-08-04T18:09:02+00:00",
+		"notes": [
+			"[Improved] Moved cache clearing to plugin settings page."
+		]
 	}
 ]
