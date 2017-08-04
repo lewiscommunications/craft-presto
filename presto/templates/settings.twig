@@ -14,12 +14,12 @@
 
 <div class="field">
 	<div class="heading">
-		<label>Purge Cache</label>
+		<label>Cache Purge</label>
 		<div class="instructions">
 			{% if cron %}
-				Schedule purging of Presto static cache. Be sure you first clear the main Craft cache to regenerate template caches.
+				Schedules purge of all static caches.
 			{% else %}
-				Purges Presto static cache and Craft template cache.
+				Purges all static and template caches.
 			{% endif %}
 		</div>
 	</div>

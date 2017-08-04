@@ -35,7 +35,7 @@ class PrestoPlugin extends BasePlugin
 
 	public function getDeveloperUrl()
 	{
-		return 'http://www.lewiscommunications.com';
+		return 'https://www.lewiscommunications.com';
 	}
 
 	public function getDocumentationUrl()
@@ -145,9 +145,7 @@ class PrestoPlugin extends BasePlugin
 	public function saveElement(Event $event)
 	{
 		// If a new element is saved, bust the entire cache
-		$this->triggerPurge(
-			$event->params['isNewElement']
-		);
+		$this->triggerPurge($event->params['isNewElement']);
 	}
 
 	/**
