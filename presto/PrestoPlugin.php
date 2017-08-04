@@ -4,7 +4,7 @@ namespace Craft;
 class PrestoPlugin extends BasePlugin
 {
 	private $name = 'Presto';
-	private $version = '0.6.0';
+	private $version = '0.6.1';
 	private $description = 'Static file extension for the native Craft cache.';
 	private $caches;
 
@@ -35,7 +35,7 @@ class PrestoPlugin extends BasePlugin
 
 	public function getDeveloperUrl()
 	{
-		return 'http://www.lewiscommunications.com';
+		return 'https://www.lewiscommunications.com';
 	}
 
 	public function getDocumentationUrl()
@@ -74,19 +74,6 @@ class PrestoPlugin extends BasePlugin
 		craft()->plugins->savePluginSettings(
 			$this, ['rootPath' => craft()->config->get('rootPath', 'presto')]
 		);
-	}
-
-	public function registerCachePaths()
-	{
-		// Don't add the Presto path if we're purging via the cron
-		if (craft()->config->get('purgeMethod', 'presto') === 'immediate') {
-			$cachePath = craft()->config->get('rootPath', 'presto') .
-				$this->getSettings()->cachePath;
-
-			return [
-				$cachePath => $this->name . ' ' . Craft::t('caches')
-			];
-		}
 	}
 
 	/**
@@ -158,9 +145,7 @@ class PrestoPlugin extends BasePlugin
 	public function saveElement(Event $event)
 	{
 		// If a new element is saved, bust the entire cache
-		$this->triggerPurge(
-			$event->params['isNewElement']
-		);
+		$this->triggerPurge($event->params['isNewElement']);
 	}
 
 	/**

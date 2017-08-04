@@ -10,14 +10,18 @@
 	first: true
 }) }}
 
-{% if craft.config.get('purgeMethod', 'presto') == 'cron' %}
-	<div class="field">
-		<div class="heading">
-			<label>Purge Cache</label>
-			<div class="instructions">
-				Schedule purging of Presto static cache. Be sure you first clear the main Craft cache to regenerate template caches.
-			</div>
+{% set cron = craft.config.get('purgeMethod', 'presto') == 'cron' %}
+
+<div class="field">
+	<div class="heading">
+		<label>Cache Purge</label>
+		<div class="instructions">
+			{% if cron %}
+				Schedules purge of all static caches.
+			{% else %}
+				Purges all static and template caches.
+			{% endif %}
 		</div>
-		<a class="btn submit" href="{{ actionUrl('presto/PurgeCache') }}">Purge Cache</a>
 	</div>
-{% endif %}
+	<a class="btn submit" href="{{ actionUrl('presto/PurgeCache') }}">{{ cron ? 'Schedule Purge' : 'Purge Cache' }}</a>
+</div>
