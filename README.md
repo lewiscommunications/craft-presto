@@ -129,7 +129,7 @@ Presto resolves subdomain hosts automatically. Static html files are created ins
 
 ## Purging the Cache
 
-To clear the Presto cache, navigate to Presto plugin settings page (*Settings > Presto*) and click "Purge Cache" ([immediate](#immediate-purge)) or "Schedule Purge" ([cron](#cron-purge)).
+To purge the cache, navigate to the Presto plugin settings page (*Settings > Presto*) and click "Purge Cache" ([immediate](#immediate-purge)) or "Schedule Purge" ([cron](#cron-purge)).
 
 **Note:** The Cron purge method does not clear the template cache. Remember to [purge the template cache](https://craftcms.com/docs/templating/cache#cache-clearing) before you schedule a purge.
 
