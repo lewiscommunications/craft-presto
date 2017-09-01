@@ -169,6 +169,12 @@ Create a "presto.php" in the config folder (*craft > config*) file and configure
 3. Click the Install button on the Presto entry.
 4. Optionally change the default cache path in the Presto settings.
 	* Note that you should exclude cache directory content from version control.
+	
+## Roadmap
+
+- Display a list of cached pages in the admin
+- Add ability to clear individual cached pages in the admin
+- Warm cache after an entry is saved or created
 
 ## License
 
