@@ -148,6 +148,10 @@ If you run Presto in an environment that spins up multiple server instances, set
 ```bash
 */10 * * * *  /var/www/craft/app/etc/console/yiic presto check
 ```
+	
+## Disabled/Archived Entries
+
+If an entry exists in the CMS but is not displayed on the site (e.g. status is disabled, entry is archived, etc.), enabling the entry will not clear any caches. Presto only clears related entries that are displayed on the site. In order to display your newly enabled entry, [purge the entire cache](#purging-the-cache).
 
 ## Config
 
@@ -165,6 +169,12 @@ Create a "presto.php" in the config folder (*craft > config*) file and configure
 3. Click the Install button on the Presto entry.
 4. Optionally change the default cache path in the Presto settings.
 	* Note that you should exclude cache directory content from version control.
+	
+## Roadmap
+
+- Display a list of cached pages in the admin
+- Add ability to clear individual cached pages in the admin
+- Warm cache after an entry is saved or created
 
 ## License
 
