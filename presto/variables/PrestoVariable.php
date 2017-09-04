@@ -15,7 +15,8 @@ class PrestoVariable
 	public function cache($config = [])
 	{
 		$host = craft()->request->getServerName();
-		$path = craft()->request->getPathInfo();
+		$baseUrl = craft()->request->getBaseUrl();
+		$path = (! empty($baseUrl) ? ltrim($baseUrl, '/') . '/' : '') . craft()->request->getPathInfo();
 
 		$keySegments = [
 			'host' => $host,
