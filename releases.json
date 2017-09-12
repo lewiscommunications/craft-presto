@@ -1,7 +1,7 @@
 [
 	{
 		"version": "0.5.0",
-		"downloadUrl": "https://github.com/caddis/craft-presto/archive/0.5.0.zip",
+		"downloadUrl": "https://github.com/lewiscommunications/craft-presto/archive/0.5.0.zip",
 		"date": "2016-10-19T20:39:16",
 		"notes": [
 			"[Added] Initial release."
@@ -9,7 +9,7 @@
 	},
 	{
 		"version": "0.6.0",
-		"downloadUrl": "https://github.com/caddis/craft-presto/archive/0.6.0.zip",
+		"downloadUrl": "https://github.com/lewiscommunications/craft-presto/archive/0.6.0.zip",
 		"date": "2017-05-10T20:41:59",
 		"notes": [
 			"[Added] Added cron cache purging for load balancer implementations."
@@ -17,7 +17,7 @@
 	},
 	{
 		"version": "0.6.1",
-		"downloadUrl": "https://github.com/caddis/craft-presto/archive/0.6.1.zip",
+		"downloadUrl": "https://github.com/lewiscommunications/craft-presto/archive/0.6.1.zip",
 		"date": "2017-08-04T18:09:02+00:00",
 		"notes": [
 			"[Improved] Moved cache clearing to plugin settings page."

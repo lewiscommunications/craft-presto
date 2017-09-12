@@ -40,12 +40,12 @@ class PrestoPlugin extends BasePlugin
 
 	public function getDocumentationUrl()
 	{
-		return 'https://github.com/caddis/craft-presto';
+		return 'https://github.com/lewiscommunications/craft-presto';
 	}
 
 	public function getReleaseFeedUrl()
 	{
-		return 'https://raw.githubusercontent.com/caddis/craft-presto/master/releases.json';
+		return 'https://raw.githubusercontent.com/lewiscommunications/craft-presto/master/releases.json';
 	}
 
 	protected function defineSettings()
