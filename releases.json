@@ -22,5 +22,13 @@
 		"notes": [
 			"[Improved] Moved cache clearing to plugin settings page."
 		]
+	},
+	{
+		"version": "0.6.2",
+		"downloadUrl": "https://github.com/caddis/craft-presto/archive/0.6.2.zip",
+		"date": "2017-09-14T16:06:13-05:00",
+		"notes": [
+			"[Fixed] Fixed issue where sites with multiple locales were caching incorrectly."
+		]
 	}
 ]
