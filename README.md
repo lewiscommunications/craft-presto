@@ -64,6 +64,24 @@ RewriteCond %{DOCUMENT_ROOT}/cache/%{HTTP_HOST}/presto/pjax%{REQUEST_URI}/index.
 RewriteRule .* /cache/%{HTTP_HOST}/presto/pjax%{REQUEST_URI}/index.html [L,E=nocache:1]]
 ```
 
+#### Nginx
+
+```nginx
+# Block direct cache access
+location /cache {
+	internal;
+}
+
+# Check Presto cache
+location ~ !\.(css|gif|ico|jpe?g|png|svg)$ {
+	if ($request_method = GET) {
+		try_files $uri /cache/$http_host/presto/$uri/index.html;
+	}
+}
+
+# Craft rewrite here
+```
+
 ## Disable Caching
 
 ### Multi-enviroment
