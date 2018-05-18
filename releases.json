@@ -30,5 +30,13 @@
 		"notes": [
 			"[Fixed] Fixed issue where sites with multiple locales were caching incorrectly."
 		]
+	},
+	{
+		"version": "0.6.3",
+		"downloadUrl": "https://github.com/lewiscommunications/craft-presto/archive/0.6.3.zip",
+		"date": "2018-05-18T22:26:18+00:00",
+		"notes": [
+			"[Fixed] Fixed issue when using Presto on a per page basis alongside other cache tags causing an error."
+		]
 	}
 ]
