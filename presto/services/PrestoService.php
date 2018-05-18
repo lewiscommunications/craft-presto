@@ -111,6 +111,10 @@ class PrestoService extends BaseApplicationComponent
 			foreach ($paths as $path) {
 				$url = explode('|', $path, 2);
 
+				if (count($url) < 2) {
+					continue;
+				}
+
 				$targetPath = IOHelper::folderExists(
 					$this->normalizePath(implode('/', [
 						$this->rootPath,
