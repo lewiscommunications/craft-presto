@@ -118,8 +118,9 @@ class PrestoVariable
     {
         $group = isset($keySegments['group']) ? $keySegments['group'] . '/' : '';
         $path = $keySegments['path'] ? $keySegments['path'] : 'home';
+        $key = $keySegments['host'] . '|' . $group . $path;
 
-        return $keySegments['host'] . '|' . $group . $path;
+        return preg_replace('/\s+/', '', $key);
     }
 
     /**
