@@ -91,6 +91,10 @@ class PrestoService extends Component
             foreach ($paths as $path) {
                 $url = explode('|', $path, 2);
 
+                if (count($url) < 2) {
+                    continue;
+                }
+
                 $targetPath = ! FileHelper::isDirectoryEmpty(
                     $this->normalizePath(implode('/', [
                         $this->rootPath,
