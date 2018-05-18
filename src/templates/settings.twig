@@ -5,11 +5,11 @@
 <input type="hidden" name="rootPath" value="{{ settings.rootPath }}">
 
 {{ forms.textField({
-	label: 'Cache Location'|t,
-	instructions: 'Relative path to the cache directory from the public root.'|t,
-	name: 'cachePath',
-	value: settings.cachePath,
-	first: true
+    label: 'Cache Location'|t,
+    instructions: 'Relative path to the cache directory from the public root.'|t,
+    name: 'cachePath',
+    value: settings.cachePath,
+    first: true
 }) }}
 
 {{ forms.selectField({
@@ -17,31 +17,26 @@
     instructions: 'The method used to purge the cache',
     name: 'purgeMethod',
     value: settings.purgeMethod,
-    options: [
-        'immediate',
-        'cron'
-    ]
+    options: {
+        immediate: 'Immediate',
+        cron: 'Cron'
+    }
 }) }}
-
-{#{{ forms.textField({#}
-	{#label: 'Purge Method'|t,#}
-	{#instructions: 'The method by which you want to purge, either "immediate" or "cron".'|t,#}
-	{#name: 'purgeMethod',#}
-	{#value: settings.purgeMethod#}
-{#}) }}#}
 
 {% set cron = settings.purgeMethod == 'cron' %}
 
+<hr>
+
 <div class="field">
-	<div class="heading">
-		<label>Cache Purge</label>
-		<div class="instructions">
-			{% if cron %}
-				Schedules purge of all static caches.
-			{% else %}
-				Purges all static and template caches.
-			{% endif %}
-		</div>
-	</div>
-	<a class="btn submit" href="{{ actionUrl('presto/default/purge-cache') }}">{{ cron ? 'Schedule Purge' : 'Purge Cache' }}</a>
+    <div class="heading">
+        <label>Cache Purge</label>
+        <div class="instructions">
+            {% if cron %}
+                Schedules purge of all static caches.
+            {% else %}
+                Purges all static and template caches.
+            {% endif %}
+        </div>
+    </div>
+    <a class="btn submit" href="{{ actionUrl('presto/default/purge-cache') }}">{{ cron ? 'Schedule Purge' : 'Purge Cache' }}</a>
 </div>

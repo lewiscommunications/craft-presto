@@ -2,7 +2,6 @@
 
 namespace lewiscom\presto;
 
-
 use Craft;
 use craft\base\Plugin;
 use craft\console\Application as ConsoleApplication;

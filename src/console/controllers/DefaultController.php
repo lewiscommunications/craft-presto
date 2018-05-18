@@ -79,7 +79,7 @@ class DefaultController extends Controller
     {
         FileHelper::writeToFile(
             $this->getUpdatePath(),
-            $this->prestoService->getDateTime()
+            $this->prestoService->getDateTime()->format('Y-m-d H:i:s')
         );
     }
 }

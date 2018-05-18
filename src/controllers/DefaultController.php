@@ -19,8 +19,8 @@ class DefaultController extends Controller
     {
         $this->requireAdmin();
 
-        $prestoService = Presto::getInstance()->prestoService;
-        $cron = Presto::getInstance()->settings->purgeMethod === 'cron';
+        $prestoService = Presto::$plugin->prestoService;
+        $cron = Presto::$plugin->settings->purgeMethod === 'cron';
 
         if ($cron) {
             $prestoService->storePurgeAllEvent();

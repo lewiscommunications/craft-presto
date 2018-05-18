@@ -3,6 +3,7 @@
 namespace lewiscom\presto\services;
 
 use Craft;
+use craft\helpers\DateTimeHelper;
 use lewiscom\presto\Presto;
 use craft\base\Component;
 use craft\helpers\FileHelper;
@@ -215,6 +216,31 @@ class PrestoService extends Component
     }
 
     /**
+     * @param $dateTime
+     * @return array
+     */
+    public function getPurgeEvents($dateTime)
+    {
+        $paths = [];
+
+        $events = PrestoCachePurgeRecord::find()
+            ->where(['>=', 'purgedAt', $dateTime->format('Y-m-d H:i:s')])
+            ->all();
+
+        foreach ($events as $event) {
+            if ($event->paths === 'all') {
+                return ['all'];
+            }
+
+            $paths = array_merge($paths, unserialize($event->paths));
+        }
+
+        sort($paths);
+
+        return $paths;
+    }
+
+    /**
      * Store recorded events for the static cache
      *
      * @param $paths
@@ -222,12 +248,9 @@ class PrestoService extends Component
     private function storeEvent($paths)
     {
         $event = new PrestoCachePurgeRecord();
-
-        $event->setAttributes([
-            'purgedAt' => $this->getDateTime(),
-            'paths' => $paths
-        ]);
-
+        $event->setAttribute('purgedAt', $this->getDateTime());
+        $event->setAttribute('paths', $paths);
+        $event->setAttribute('siteId', Craft::$app->sites->currentSite->id);
         $event->save();
     }
 
