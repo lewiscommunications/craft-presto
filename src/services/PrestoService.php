@@ -75,6 +75,16 @@ class PrestoService extends Component
 
             $targetFile = $targetPath . '/index.' . $extension;
 
+            $html = str_replace(
+                [
+                    '<![CDATA[YII-BLOCK-HEAD]]>',
+                    '<![CDATA[YII-BLOCK-BODY-BEGIN]]>',
+                    '<![CDATA[YII-BLOCK-BODY-END]]>',
+                ],
+                '',
+                $html
+            );
+
             FileHelper::writeToFile($targetFile, trim($html));
         }
     }
