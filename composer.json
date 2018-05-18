@@ -1,0 +1,43 @@
+{
+    "name": "lewiscom/presto",
+    "description": "A static cache extension for Craft chaching",
+    "type": "craft-plugin",
+    "version": "2.0.0-beta",
+    "keywords": [
+        "craft",
+        "cms",
+        "craftcms",
+        "craft-plugin",
+        "presto"
+    ],
+    "support": {
+        "docs": "https://github.com/github.com/lewiscommunications/presto/blob/master/README.md",
+        "issues": "https://github.com/github.com/lewiscommunications/presto/issues"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Lewis Communications",
+            "homepage": "https://www.lewiscommunications.com"
+        }
+    ],
+    "require": {
+        "craftcms/cms": "^3.0.0-RC1"
+    },
+    "autoload": {
+        "psr-4": {
+          "lewiscom\\presto\\": "src/"
+        }
+    },
+    "extra": {
+        "name": "Presto",
+        "handle": "presto",
+        "hasCpSettings": true,
+        "hasCpSection": false,
+        "changelogUrl": "https://raw.githubusercontent.com/github.com/lewiscommunications/presto/master/CHANGELOG.md",
+        "components": {
+            "prestoService": "lewiscom\\presto\\services\\PrestoService"
+        },
+        "class": "lewiscom\\presto\\Presto"
+    }
+}
