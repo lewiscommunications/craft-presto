@@ -50,7 +50,6 @@ class PrestoService extends Component
             return;
         }
 
-        // TODO: Check if this check is necessary
         if (! isset($config['static']) || $config['static'] !== false) {
             $pathSegments = [
                 $this->rootPath,
