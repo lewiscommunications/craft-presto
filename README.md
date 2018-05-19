@@ -163,32 +163,19 @@ By default, Presto will purge the static cache and all related Craft template ca
 
 ### Cron Purge
 
-If you run Presto in an environment that spins up multiple server instances, set the [purgeMethod config](#config) to "cron". Set up a cron job on each server instance that runs the `presto check` [console command](https://craftcms.com/classreference/consolecommands/BaseCommand). The following example will run it every 10 minutes.
+If you run Presto in an environment that spins up multiple server instances, set the [purgeMethod config](#config) to "cron". Set up a cron job on each server instance that runs the `presto/default/check` console command. The following example will run it every 10 minutes.
 
 ```bash
-*/10 * * * *  /var/www/craft/app/etc/console/yiic presto check
+*/10 * * * *  php /var/www/craft presto/default/check
 ```
 
 ## Disabled/Archived Entries
 
-If an entry exists in the CMS but is not displayed on the site (e.g. status is disabled, entry is archived, etc.), enabling the entry will not clear any caches. Presto only clears related entries that are displayed on the site. In order to display your newly enabled entry, [purge the entire cache](#purging-the-cache).
-
-## Config
-
-Create a "presto.php" in the config folder (*craft > config*) file and configure as needed.
-
-| Parameter   | Type   | Default                     | Description                                                                                                                              |
-| ----------- | ------ | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| purgeMethod | string | `immediate`                 | Changes how cache busting should be handled: immediately when Craft busts its cache, or via a cron job. Options: `immediate` and `cron`. |
-| rootPath    | string | `$_SERVER['DOCUMENT_ROOT']` | Root public directory                                                                                                                    |
+If an entry exists in the CMS but is not displayed on the site (e.g. status is disabled, entry is archived, etc.), enabling the entry will not clear any caches. Presto only clears related entries that are displayed on the site. In order to display your newly enabled entry, [purge the entire cache](#purging-the-cache).                                                                                                                    |
 
 ## Installation
 
-1. Move the "presto" directory to "craft/plugins".
-2. In the Craft admin, navigate to the Plugin section within Settings.
-3. Click the Install button on the Presto entry.
-4. Optionally change the default cache path in the Presto settings.
-	* Note that you should exclude cache directory content from version control.
+`composer require lewiscom/presto`
 
 ## Roadmap
 
