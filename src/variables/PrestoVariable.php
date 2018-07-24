@@ -47,7 +47,7 @@ class PrestoVariable
     {
         $this->host = Craft::$app->request->getServerName();
         $this->baseUrl = Craft::$app->request->getBaseUrl();
-        $this->path = (! empty($this->baseUrl) ? ltrim($this->baseUrl, '/') . '/' : '') . Craft::$app->request->getPathInfo();
+        $this->path = (! empty($this->baseUrl) ? ltrim($this->baseUrl, '/') . '/' : '') . Craft::$app->request->getFullPath();
         $this->service = Presto::getInstance()->prestoService;
     }
 
