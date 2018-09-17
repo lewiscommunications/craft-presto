@@ -12,6 +12,13 @@ class DefaultController extends Controller
     public $prestoService;
 
     /**
+     * Purge the entire cache
+     */
+    public function actionPurge() {
+        $this->prestoService->purgeEntireCache();
+    }
+
+    /**
      * @throws \yii\base\ErrorException
      */
     public function actionCheck()
