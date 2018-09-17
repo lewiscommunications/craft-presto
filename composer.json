@@ -2,7 +2,6 @@
     "name": "lewiscom/presto",
     "description": "A static cache extension for Craft chaching",
     "type": "craft-plugin",
-    "version": "1.0.0-beta",
     "keywords": [
         "craft",
         "cms",
