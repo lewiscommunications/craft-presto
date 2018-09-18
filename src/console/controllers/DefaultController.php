@@ -24,6 +24,8 @@ class DefaultController extends Controller
     public function actionPurge()
     {
         $this->prestoService->purgeEntireCache();
+
+        echo "Template cache has been purged";
     }
 
     /**
