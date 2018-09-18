@@ -11,10 +11,18 @@ class DefaultController extends Controller
 {
     public $prestoService;
 
+    public function __construct(string $id, Presto $module, array $config = [])
+    {
+        $this->prestoService = Presto::$plugin->prestoService;
+
+        parent::__construct($id, $module, $config);
+    }
+
     /**
      * Purge the entire cache
      */
-    public function actionPurge() {
+    public function actionPurge()
+    {
         $this->prestoService->purgeEntireCache();
     }
 
@@ -23,8 +31,6 @@ class DefaultController extends Controller
      */
     public function actionCheck()
     {
-        $this->prestoService = Presto::$plugin->prestoService;
-
         $this->prestoService->updateRootPath(
             Presto::$plugin->settings->rootPath
         );
