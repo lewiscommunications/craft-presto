@@ -104,7 +104,7 @@ class PrestoService extends Component
                     continue;
                 }
 
-                $directory = $this->normalizePath(implode('/', [
+                $targetPath = $this->normalizePath(implode('/', [
                     $this->rootPath,
                     $this->settings->cachePath,
                     $url[0],
@@ -112,11 +112,11 @@ class PrestoService extends Component
                     str_replace('home', '', $url[1])
                 ]));
 
-                if (! file_exists($directory)) {
+                if (! file_exists($targetPath)) {
                     continue;
                 }
 
-                $targetFile = file_exists($directory . '/index.html');
+                $targetFile = file_exists($targetPath . '/index.html');
 
                 if ($targetFile) {
                     @unlink($targetFile);
