@@ -104,15 +104,17 @@ class PrestoService extends Component
                     continue;
                 }
 
-                $targetPath = ! FileHelper::isDirectoryEmpty(
-                    $this->normalizePath(implode('/', [
-                        $this->rootPath,
-                        $this->settings->cachePath,
-                        $url[0],
-                        'presto',
-                        str_replace('home', '', $url[1])
-                    ]))
-                );
+                $directory = $this->normalizePath(implode('/', [
+                    $this->rootPath,
+                    $this->settings->cachePath,
+                    $url[0],
+                    'presto',
+                    str_replace('home', '', $url[1])
+                ]));
+
+                if (! file_exists($directory)) {
+                    continue;
+                }
 
                 $targetFile = file_exists($targetPath . '/index.html');
 
