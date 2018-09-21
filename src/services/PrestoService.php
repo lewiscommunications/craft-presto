@@ -116,7 +116,7 @@ class PrestoService extends Component
                     continue;
                 }
 
-                $targetFile = file_exists($targetPath . '/index.html');
+                $targetFile = file_exists($directory . '/index.html');
 
                 if ($targetFile) {
                     @unlink($targetFile);
