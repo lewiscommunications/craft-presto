@@ -45,7 +45,7 @@ class PrestoPlugin extends BasePlugin
 
 	public function getReleaseFeedUrl()
 	{
-		return 'https://raw.githubusercontent.com/lewiscommunications/craft-presto/master/releases.json';
+		return 'https://raw.githubusercontent.com/lewiscommunications/craft-presto/craft-2.5/releases.json';
 	}
 
 	protected function defineSettings()
