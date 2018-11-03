@@ -3,7 +3,6 @@
 namespace lewiscom\presto\services;
 
 use Craft;
-use const DIRECTORY_SEPARATOR;
 use RegexIterator;
 use craft\db\Query;
 use craft\base\Component;
@@ -44,7 +43,8 @@ class CacheService extends Component
         $immediate = $this->settings->purgeMethod === 'immediate';
 
         if ($all) {
-            //Craft::$app->templateCaches->deleteAllCaches();
+            // Delete all of the caches in the Craft template cache table
+            Craft::$app->templateCaches->deleteAllCaches();
 
             if ($immediate) {
                 $this->purgeEntireCache();
@@ -55,14 +55,17 @@ class CacheService extends Component
         } else if (count($caches) || count($this->caches)) {
             $caches = count($caches) ? $caches : $this->caches;
 
+            Craft::$app->templateCaches->deleteCachesByKey($caches);
+
             if ($immediate) {
                 $this->purgeCache(
                     $this->formatPaths($caches)
                 );
             } else {
-                $this->storePurgeEvent(
-                    $this->formatPaths($caches)
-                );
+                // TODO
+                //$this->storePurgeEvent(
+                //    $this->formatPaths($caches)
+                //);
             }
         }
     }
@@ -106,6 +109,28 @@ class CacheService extends Component
     public function setCaches(array $ids = [])
     {
         $this->caches = $this->getRelatedTemplateCaches($ids);
+    }
+
+    /**
+     * Gets all of the cache keys
+     *
+     * @return array
+     */
+    public function getAllCacheKeys()
+    {
+        $keys = [];
+
+        $results = (new Query())
+            ->select('cacheKey')
+            ->from(['{{%templatecaches}}'])
+            ->distinct()
+            ->all();
+
+        foreach ($results as $result) {
+            $keys = array_merge($keys,  array_values($result));
+        }
+
+        return $keys;
     }
 
     /**
@@ -204,6 +229,11 @@ class CacheService extends Component
         return http_response_code() === 200 &&
             ! $request->isLivePreview &&
             ! $request->isPost;
+    }
+
+    public function hasCaches()
+    {
+        return count($this->caches);
     }
 
     /**

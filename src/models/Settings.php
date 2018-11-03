@@ -2,9 +2,6 @@
 
 namespace lewiscom\presto\models;
 
-use lewiscom\presto\Presto;
-
-use Craft;
 use craft\base\Model;
 
 class Settings extends Model
@@ -42,7 +39,14 @@ class Settings extends Model
      *
      * @var bool
      */
+    // TODO: Possibly change this to `warmCacheOnSave`
     public $warmCache = true;
+
+    /**
+     * The location of the site map index to crawl
+     * @var string
+     */
+    public $sitemapIndex = '@cdnUrl/sitemaps/index.xml';
 
     /**
      * Validation rules
@@ -58,6 +62,8 @@ class Settings extends Model
             ['cachePath', 'default', 'value' => '/cache'],
             ['purgeMethod', 'string'],
             ['purgeMethod', 'default', 'value' => 'immediate'],
+            ['sitemapIndex', 'string'],
+            ['sitemapIndex', 'default', 'value' => '@cdnUrl/sitemaps/index.xml'],
             ['cacheWhenLoggedIn', 'boolean'],
             ['purgeMethod', 'default', 'value' => false],
         ];

@@ -2,25 +2,25 @@
 
 namespace lewiscom\presto;
 
-use craft\services\Elements;
-use craft\services\Structures;
-use lewiscom\presto\services\CacheService as CacheService;
-use lewiscom\presto\services\EventHandlerService;
-use lewiscom\presto\variables\PrestoVariable;
-use lewiscom\presto\twigextensions\PrestoTwigExtension;
-use lewiscom\presto\models\Settings;
-use lewiscom\presto\widgets\PrestoWidget;
-
 use Craft;
-use craft\base\Plugin;
-use craft\console\Application as ConsoleApplication;
-use craft\web\UrlManager;
-use craft\web\twig\variables\CraftVariable;
-use craft\services\Dashboard;
-use craft\events\RegisterComponentTypesEvent;
-use craft\events\RegisterUrlRulesEvent;
-
+use const CRAFT_BASE_PATH;
 use yii\base\Event;
+use craft\base\Plugin;
+use craft\web\UrlManager;
+use craft\services\Elements;
+use craft\services\Dashboard;
+use craft\services\Structures;
+use lewiscom\presto\models\Settings;
+use craft\events\RegisterUrlRulesEvent;
+use lewiscom\presto\widgets\PrestoWidget;
+use lewiscom\presto\services\CacheService;
+use craft\web\twig\variables\CraftVariable;
+use lewiscom\presto\services\CrawlerService;
+use lewiscom\presto\variables\PrestoVariable;
+use craft\events\RegisterComponentTypesEvent;
+use lewiscom\presto\services\EventHandlerService;
+use craft\console\Application as ConsoleApplication;
+use lewiscom\presto\twigextensions\PrestoTwigExtension;
 
 /**
  * Class Presto
@@ -28,6 +28,7 @@ use yii\base\Event;
  * @package lewiscom\presto
  * @property CacheService $cacheService
  * @property EventHandlerService $eventHandlerService
+ * @property CrawlerService $crawlerService
  * @property Settings $settings
  * @method Settings getSettings()
  */
@@ -70,6 +71,7 @@ class Presto extends Plugin
         $this->setComponents([
             'cacheService' => CacheService::class,
             'eventHandlerService' => EventHandlerService::class,
+            'crawlerService' => CrawlerService::class,
         ]);
 
         // Register everything

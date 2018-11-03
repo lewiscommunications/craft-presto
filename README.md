@@ -203,4 +203,6 @@ If an entry exists in the CMS but is not displayed on the site (e.g. status is d
 
 ## License
 
-Copyright 2018 [Lewis Communications, LLC](http://www.lewiscommunications.com). Licensed under the [Apache License, Version 2.0](LICENSE.md).
+Copyright 2017 [Lewis Communications, LLC](http://www.lewiscommunications.com). Licensed under the [Apache License, Version 2.0](LICENSE).
+
+Brought to you by [Lewis Communications](https://www.lewiscommunications.com)

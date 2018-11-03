@@ -1,12 +1,4 @@
 <?php
-/**
- * Presto plugin for Craft CMS 3.x
- *
- * A static cache plugin for Craft CMS 3.x
- *
- * @link      https://www.lewiscommunications.com
- * @copyright Copyright (c) 2018 Lewis Communications
- */
 
 /**
  * Presto config.php
@@ -23,8 +15,9 @@
  */
 
 return [
-
-    // This controls blah blah blah
-    "someAttribute" => true,
-
+    'rootPath' => '@basePath/public_html',
+    'cachePath' => '/cache',
+    'purgeMethod' => 'immediate',
+    'sitemapIndex' => '@cdnUrl/sitemaps/index.xml',
+    'cacheWhenLoggedIn' => true,
 ];

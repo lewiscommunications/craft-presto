@@ -24,6 +24,17 @@
     placeholder: '/cache',
 }) }}
 
+{{ forms.autosuggestField({
+    label: 'Sitemap Index'|t('presto'),
+    instructions: 'The public path to your sitemap index'|t('presto'),
+    id: 'sitemapIndex',
+    name: 'sitemapIndex',
+    value: settings.sitemapIndex,
+    suggestions: craft.cp.getEnvSuggestions(true),
+    required: true,
+    placeholder: '@cdnUrl/sitemaps/index.xml',
+}) }}
+
 {{ forms.checkboxField({
     label: 'Cache pages for logged in users'|t('presto'),
     id: 'cacheWhenLoggedIn',
@@ -48,4 +59,13 @@
         </div>
     </div>
     <a class="btn submit" href="{{ actionUrl('presto/default/purge-cache') }}">Purge Cache</a>
+</div>
+
+<div class="field">
+    <div class="heading">
+        <div class="instructions">
+            Crawl your website based on the urls in your sitemap
+        </div>
+    </div>
+    <a class="btn submit" href="{{ actionUrl('presto/default/warm-entire-cache') }}">Warm Cache</a>
 </div>

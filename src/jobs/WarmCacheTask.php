@@ -9,11 +9,9 @@ use craft\queue\BaseJob;
 class WarmCacheTask extends BaseJob
 {
     /**
-     * Some attribute
-     *
-     * @var mixed
+     * @var array
      */
-    public $element;
+    public $urls = [];
 
     /**
      * @param \craft\queue\QueueInterface|\yii\queue\Queue $queue
@@ -22,14 +20,17 @@ class WarmCacheTask extends BaseJob
     public function execute($queue)
     {
         $client = new Client();
-        $client->request(
-            'GET',
-            $this->element->url,
-            [
-                'verify' => false,
-                'exceptions' => false,
-            ]
-        );
+
+        foreach ($this->urls as $url) {
+            $client->request(
+                'GET',
+                $url,
+                [
+                    'verify' => false,
+                    'exceptions' => false,
+                ]
+            );
+        }
     }
 
     /**

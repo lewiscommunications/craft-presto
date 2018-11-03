@@ -4,6 +4,7 @@ namespace lewiscom\presto\services;
 
 use Craft;
 use craft\base\Component;
+use craft\elements\Entry;
 use lewiscom\presto\jobs\WarmCacheTask;
 use lewiscom\presto\Presto;
 use craft\events\ElementEvent;
@@ -17,6 +18,9 @@ class EventHandlerService extends Component
      */
     public $settings;
 
+    /**
+     * @var mixed
+     */
     public $cacheService;
 
     public function init()
@@ -32,15 +36,15 @@ class EventHandlerService extends Component
      */
     public function handleAfterSaveElementEvent(ElementEvent $event)
     {
-        if (! $event->isNew) {
-            $this->cacheService->triggerPurge();
-        }
+        $this->cacheService->triggerPurge();
 
         if ($this->settings->warmCache) {
             Craft::$app
                 ->getQueue()
                 ->push(new WarmCacheTask([
-                    'element' => $event->element,
+                    'urls' => [
+                        $event->element->url,
+                    ],
                 ]));
         }
     }
@@ -53,7 +57,17 @@ class EventHandlerService extends Component
     public function handleBeforeSaveElementEvent(ElementEvent $event)
     {
         if (! $event->isNew && ! $this->cacheService->caches) {
-            $this->cacheService->setCaches([$event->element->id]);
+            $this->cacheService->setCaches([
+                $event->element->id
+            ]);
+        } else if ($event->isNew && ! $this->cacheService->caches) {
+            $entries = Entry::find()->where(['sectionId' => '2'])->all();
+
+            $caches = array_map(function($entry) {
+                return $entry->id;
+            }, $entries);
+
+            $this->cacheService->setCaches($caches);
         }
     }
 
@@ -64,11 +78,11 @@ class EventHandlerService extends Component
      */
     public function handleBeforeDeleteElementEvent(ElementEvent $event)
     {
-        $caches = $this->cacheService->getRelatedTemplateCaches([
+        $this->cacheService->setCaches([
             $event->element->id
         ]);
 
-        $this->cacheService->triggerPurge(false, $caches);
+        $this->cacheService->triggerPurge();
     }
 
     /**
@@ -79,11 +93,9 @@ class EventHandlerService extends Component
     public function handleBeforePerformActionEvent(ElementActionEvent $event)
     {
         if (! $event->action->isDestructive()) {
-            $caches = $this->cacheService->getRelatedTemplateCaches(
-                $event->criteria->ids()
-            );
+            $this->cacheService->setCaches($event->criteria->ids());
 
-            if (count($caches)) {
+            if ($this->cacheService->hasCaches()) {
                 $this->cacheService->triggerPurge(false, $caches);
             } else {
                 $this->cacheService->triggerPurge(true);
@@ -98,10 +110,10 @@ class EventHandlerService extends Component
      */
     public function handleBeforeMoveElementEvent(MoveElementEvent $event)
     {
-        $caches = $this->cacheService->getRelatedTemplateCaches([
+        $this->cacheService->setCaches([
             $event->element->id
         ]);
 
-        $this->cacheService->triggerPurge(false, $caches);
+        $this->cacheService->triggerPurge();
     }
 }

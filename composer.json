@@ -22,7 +22,8 @@
         }
     ],
     "require": {
-        "craftcms/cms": "^3.0.0-RC1"
+        "craftcms/cms": "^3.0.0-RC1",
+        "alc/sitemap-crawler": "^1.0"
     },
     "autoload": {
         "psr-4": {
@@ -36,7 +37,8 @@
         "hasCpSection": false,
         "changelogUrl": "https://raw.githubusercontent.com/lewiscom/craft-presto/presto/master/CHANGELOG.md",
         "components": {
-            "prestoService": "lewiscom\\presto\\services\\PrestoService"
+            "prestoService": "lewiscom\\presto\\services\\PrestoService",
+          "cacheService": "lewiscom\\presto\\services\\CacheService"
         },
         "class": "lewiscom\\presto\\Presto"
     }
