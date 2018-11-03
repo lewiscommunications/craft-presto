@@ -23,6 +23,9 @@ class EventHandlerService extends Component
      */
     public $cacheService;
 
+    /**
+     * Initialize component
+     */
     public function init()
     {
         parent::init();

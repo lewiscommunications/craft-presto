@@ -23,6 +23,9 @@ class CacheService extends Component
      */
     public $caches = [];
 
+    /**
+     * Initialize component
+     */
     public function init()
     {
         parent::init();
@@ -251,6 +254,11 @@ class CacheService extends Component
         return $arr ? $path : implode('', $path);
     }
 
+    /**
+     * Returns the total number of cached static file templates
+     *
+     * @return int
+     */
     public function getStaticCacheFileCount()
     {
         $dir = new RecursiveDirectoryIterator(Presto::$plugin->cacheService->getCachePath());
@@ -263,6 +271,25 @@ class CacheService extends Component
         }
 
         return count($fileList);
+    }
+
+    /**
+     * Generate cacheKey based on the host and path
+     *
+     * @param array $keySegments [
+     *		@var string $host
+     *		@var string $path
+     * 		@var string $group (optional)
+     * ]
+     * @return string
+     */
+    public function generateKey($keySegments)
+    {
+        $group = isset($keySegments['group']) ? $keySegments['group'] . '/' : '';
+        $path = $keySegments['path'] ? $keySegments['path'] : 'home';
+        $key = $keySegments['host'] . '|' . $group . $path;
+
+        return preg_replace('/\s+/', '', $key);
     }
 
     /**

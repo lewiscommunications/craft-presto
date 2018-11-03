@@ -2,11 +2,10 @@
 
 namespace lewiscom\presto\controllers;
 
-use craft\helpers\UrlHelper;
-use lewiscom\presto\Presto;
-
 use Craft;
 use craft\web\Controller;
+use lewiscom\presto\Presto;
+use craft\helpers\UrlHelper;
 
 /**
  * Class DefaultController
@@ -45,7 +44,6 @@ class DefaultController extends Controller
      * Purge the cache
      *
      * @return \yii\web\Response
-     * @throws \yii\base\ErrorException
      * @throws \yii\web\ForbiddenHttpException
      */
     public function actionPurgeCache()

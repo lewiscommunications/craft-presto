@@ -2,11 +2,11 @@
 
 namespace lewiscom\presto\services;
 
-use Alc\SitemapCrawler;
 use Craft;
+use Alc\SitemapCrawler;
 use craft\base\Component;
-use lewiscom\presto\jobs\WarmCacheTask;
 use lewiscom\presto\Presto;
+use lewiscom\presto\jobs\WarmCacheTask;
 
 /**
  * Class CrawlerService
@@ -32,6 +32,9 @@ class CrawlerService extends Component
      */
     public $urls = [];
 
+    /**
+     * Initialize component
+     */
     public function init()
     {
         parent::init();
@@ -40,6 +43,11 @@ class CrawlerService extends Component
         $this->cacheService = Presto::$plugin->cacheService;
     }
 
+    /**
+     * Crawl a specific url
+     *
+     * @param string $url
+     */
     public function crawl($url = '')
     {
         $results = $this->crawler->crawl($url);
@@ -49,15 +57,9 @@ class CrawlerService extends Component
 
         // Iterate over the urls and create a map of `$url => $cacheKey`
         foreach ($this->urls as $url) {
-            $parsedUrl = parse_url($url);
-            $key = $parsedUrl['host'] .
-                preg_replace('/^\//', '|', $parsedUrl['path']);
-
-            if (! preg_match('/\|(\w.*)/', $key)) {
-                $key = $key . 'home';
-            }
-
-            $urlKeyMap[$url] = $key;
+            $pathInfo = parse_url($url);
+            $pathInfo['path'] =  ltrim($pathInfo['path'], '/');
+            $urlKeyMap[$url] = $this->cacheService->generateKey($pathInfo);
         }
 
         $existingKeys = $this->cacheService->getAllCacheKeys();

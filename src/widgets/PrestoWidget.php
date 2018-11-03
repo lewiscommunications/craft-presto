@@ -2,24 +2,13 @@
 
 namespace lewiscom\presto\widgets;
 
-use craft\db\Query;
-use lewiscom\presto\assetbundles\widget\WidgetAsset;
-
 use Craft;
 use craft\base\Widget;
 use lewiscom\presto\Presto;
+use lewiscom\presto\assetbundles\widget\WidgetAsset;
 
 class PrestoWidget extends Widget
 {
-
-    /**
-     * @var string The message to display
-     */
-    public $message = 'Hello, world.';
-
-    // Static Methods
-    // =========================================================================
-
     /**
      * Returns the display name of this class.
      *
@@ -73,6 +62,7 @@ class PrestoWidget extends Widget
      */
     public function getSettingsHtml()
     {
+        // TODO
         //return Craft::$app->getView()->renderTemplate(
         //    'presto/_components/widgets/settings',
         //    [
@@ -97,7 +87,9 @@ class PrestoWidget extends Widget
         return Craft::$app->getView()->renderTemplate(
             'presto/_components/widgets/body',
             [
-                'cacheCount' => Presto::$plugin->cacheService->getStaticCacheFileCount(),
+                'cacheCount' => Presto::$plugin
+                    ->cacheService
+                    ->getStaticCacheFileCount(),
             ]
         );
     }

@@ -3,7 +3,6 @@
 namespace lewiscom\presto;
 
 use Craft;
-use const CRAFT_BASE_PATH;
 use yii\base\Event;
 use craft\base\Plugin;
 use craft\web\UrlManager;
@@ -20,7 +19,6 @@ use lewiscom\presto\variables\PrestoVariable;
 use craft\events\RegisterComponentTypesEvent;
 use lewiscom\presto\services\EventHandlerService;
 use craft\console\Application as ConsoleApplication;
-use lewiscom\presto\twigextensions\PrestoTwigExtension;
 
 /**
  * Class Presto
@@ -57,9 +55,6 @@ class Presto extends Plugin
     {
         parent::init();
         self::$plugin = $this;
-
-        // Add in our Twig extensions
-        Craft::$app->view->registerTwigExtension(new PrestoTwigExtension());
 
         // Add in our console commands
         if (Craft::$app instanceof ConsoleApplication) {
@@ -181,15 +176,6 @@ class Presto extends Plugin
             UrlManager::EVENT_REGISTER_SITE_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
                 $event->rules['siteActionTrigger1'] = 'presto/default';
-            }
-        );
-
-        // Register our CP routes
-        Event::on(
-            UrlManager::class,
-            UrlManager::EVENT_REGISTER_CP_URL_RULES,
-            function (RegisterUrlRulesEvent $event) {
-                $event->rules['cpActionTrigger1'] = 'presto/default/do-something';
             }
         );
     }

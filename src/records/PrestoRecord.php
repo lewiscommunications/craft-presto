@@ -1,19 +1,11 @@
 <?php
-/**
- * Presto plugin for Craft CMS 3.x
- *
- * A static cache plugin for Craft CMS 3.x
- *
- * @link      https://www.lewiscommunications.com
- * @copyright Copyright (c) 2018 Lewis Communications
- */
 
 namespace lewiscom\presto\records;
 
-use lewiscom\presto\Presto;
-
 use Craft;
 use craft\db\ActiveRecord;
+use lewiscom\presto\Presto;
+
 
 /**
  * PrestoRecord Record

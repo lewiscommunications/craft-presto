@@ -3,9 +3,9 @@
 namespace lewiscom\presto\variables;
 
 use Craft;
+use yii\base\Event;
 use craft\web\Application;
 use lewiscom\presto\Presto;
-use yii\base\Event;
 
 class PrestoVariable
 {
@@ -50,11 +50,12 @@ class PrestoVariable
     public function __construct()
     {
         $plugin = Presto::$plugin;
+        $request = Craft::$app->request;
 
-        $this->host = Craft::$app->request->getServerName();
-        $this->baseUrl = Craft::$app->request->getBaseUrl();
+        $this->host = $request->getServerName();
+        $this->baseUrl = $request->getBaseUrl();
         $this->path = (! empty($this->baseUrl) ? ltrim($this->baseUrl, '/') . '/' : '')
-            . Craft::$app->request->getFullPath();
+            . $request->getFullPath();
         $this->cacheService = $plugin->cacheService;
         $this->settings = $plugin->getSettings();
     }
@@ -71,6 +72,7 @@ class PrestoVariable
     public function cache($config = [])
     {
         $this->config = $config;
+        Presto::$plugin->crawlerService->crawl('https://usahealth.dev/sitemaps/index.xml');
 
         $keySegments = [
             'host' => $this->host,
@@ -81,7 +83,7 @@ class PrestoVariable
             $keySegments['group'] = $config['group'];
         }
 
-        $this->key = $this->generateKey($keySegments);
+        $this->key = $this->cacheService->generateKey($keySegments);
 
         Event::on(
             Application::class,
@@ -113,24 +115,5 @@ class PrestoVariable
                 );
             }
         }
-    }
-
-    /**
-     * Generate cacheKey based on the host and path
-     *
-     * @param array $keySegments [
-     *		@var string $host
-     *		@var string $path
-     * 		@var string $group (optional)
-     * ]
-     * @return string
-     */
-    private function generateKey($keySegments)
-    {
-        $group = isset($keySegments['group']) ? $keySegments['group'] . '/' : '';
-        $path = $keySegments['path'] ? $keySegments['path'] : 'home';
-        $key = $keySegments['host'] . '|' . $group . $path;
-
-        return preg_replace('/\s+/', '', $key);
     }
 }
