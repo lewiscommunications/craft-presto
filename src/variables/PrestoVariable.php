@@ -3,6 +3,7 @@
 namespace lewiscom\presto\variables;
 
 use Craft;
+use craft\web\Application;
 use lewiscom\presto\Presto;
 use yii\base\Event;
 
@@ -26,7 +27,7 @@ class PrestoVariable
     /**
      * @var mixed
      */
-    public $service;
+    public $cacheService;
 
     /**
      * @var array
@@ -39,16 +40,23 @@ class PrestoVariable
     public $key;
 
     /**
+     * @var array
+     */
+    public $settings;
+
+    /**
      * PrestoVariable constructor.
-     *
-     * @throws \yii\base\InvalidConfigException
      */
     public function __construct()
     {
+        $plugin = Presto::$plugin;
+
         $this->host = Craft::$app->request->getServerName();
         $this->baseUrl = Craft::$app->request->getBaseUrl();
-        $this->path = (! empty($this->baseUrl) ? ltrim($this->baseUrl, '/') . '/' : '') . Craft::$app->request->getFullPath();
-        $this->service = Presto::getInstance()->prestoService;
+        $this->path = (! empty($this->baseUrl) ? ltrim($this->baseUrl, '/') . '/' : '')
+            . Craft::$app->request->getFullPath();
+        $this->cacheService = $plugin->cacheService;
+        $this->settings = $plugin->getSettings();
     }
 
     /**
@@ -75,8 +83,9 @@ class PrestoVariable
 
         $this->key = $this->generateKey($keySegments);
 
-        Craft::$app->on(
-            Craft::$app::EVENT_AFTER_REQUEST,
+        Event::on(
+            Application::class,
+            Application::EVENT_AFTER_REQUEST,
             [$this, 'handleAfterRequestEvent']
         );
 
@@ -86,15 +95,17 @@ class PrestoVariable
     /**
      * This method will check if the request is cacheable, if so we will
      * create the static html file
+     *
+     * @throws \yii\base\ErrorException
      */
     public function handleAfterRequestEvent()
     {
         if (
             (! isset($this->config['static']) || $this->config['static'] !== false) &&
-            $this->isCacheable()
+            $this->cacheService->isCacheable()
         ) {
             if ($html = Craft::$app->templateCaches->getTemplateCache($this->key, true)) {
-                $this->service->writeCache(
+                $this->cacheService->write(
                     $this->host,
                     $this->path,
                     $html,
@@ -121,20 +132,5 @@ class PrestoVariable
         $key = $keySegments['host'] . '|' . $group . $path;
 
         return preg_replace('/\s+/', '', $key);
-    }
-
-    /**
-     * Check if request is a valid get request that is not in live
-     * preview mode
-     *
-     * @return bool
-     */
-    private function isCacheable()
-    {
-        $request = Craft::$app->request;
-
-        return http_response_code() === 200 &&
-            ! $request->isLivePreview &&
-            ! $request->isPost;
     }
 }

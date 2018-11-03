@@ -1,100 +1,82 @@
 <?php
+/**
+ * Presto plugin for Craft CMS 3.x
+ *
+ * A static cache plugin for Craft CMS 3.x
+ *
+ * @link      https://www.lewiscommunications.com
+ * @copyright Copyright (c) 2018 Lewis Communications
+ */
 
 namespace lewiscom\presto\console\controllers;
 
-use Craft;
-use craft\helpers\FileHelper;
 use lewiscom\presto\Presto;
-use yii\console\Controller;
 
+use Craft;
+use yii\console\Controller;
+use yii\helpers\Console;
+
+/**
+ * Default Command
+ *
+ * The first line of this class docblock is displayed as the description
+ * of the Console Command in ./craft help
+ *
+ * Craft can be invoked via commandline console by using the `./craft` command
+ * from the project root.
+ *
+ * Console Commands are just controllers that are invoked to handle console
+ * actions. The segment routing is plugin-name/controller-name/action-name
+ *
+ * The actionIndex() method is what is executed if no sub-commands are supplied, e.g.:
+ *
+ * ./craft presto/default
+ *
+ * Actions must be in 'kebab-case' so actionDoSomething() maps to 'do-something',
+ * and would be invoked via:
+ *
+ * ./craft presto/default/do-something
+ *
+ * @author    Lewis Communications
+ * @package   Presto
+ * @since     1
+ */
 class DefaultController extends Controller
 {
-    public $prestoService;
-
-    public function __construct(string $id, Presto $module, array $config = [])
-    {
-        $this->prestoService = Presto::$plugin->prestoService;
-
-        parent::__construct($id, $module, $config);
-    }
+    // Public Methods
+    // =========================================================================
 
     /**
-     * Purge the entire cache
-     */
-    public function actionPurge()
-    {
-        $this->prestoService->purgeEntireCache();
-
-        echo "Template cache has been purged";
-    }
-
-    /**
-     * @throws \yii\base\ErrorException
-     */
-    public function actionCheck()
-    {
-        $this->prestoService->updateRootPath(
-            Presto::$plugin->settings->rootPath
-        );
-
-        // Does the purge log file exist?
-        if (! file_exists($this->getUpdatePath())) {
-            FileHelper::writeToFile($this->getUpdatePath(), '');
-        }
-
-        $lastUpdated = $this->getUpdateTime();
-        $this->writeUpdateTime();
-
-        if (! $lastUpdated) {
-            $this->prestoService->purgeEntireCache();
-        } else {
-            $lastUpdated = $this->prestoService->getDateTime($lastUpdated);
-
-            $paths = $this->prestoService->getPurgeEvents($lastUpdated);
-
-            if (count($paths)) {
-                if ($paths[0] === 'all') {
-                    $this->prestoService->purgeEntireCache();
-                } else {
-                    $this->prestoService->purgeCache($paths);
-                }
-            }
-        }
-    }
-
-    /**
-     * Returns the string value for when the check was last run
+     * Handle presto/default console commands
      *
-     * @return array|bool|string
+     * The first line of this method docblock is displayed as the description
+     * of the Console Command in ./craft help
+     *
+     * @return mixed
      */
-    private function getUpdateTime()
+    public function actionIndex()
     {
-        return file_get_contents(
-            $this->getUpdatePath()
-        );
+        $result = 'something';
+
+        echo "Welcome to the console DefaultController actionIndex() method\n";
+
+        return $result;
     }
 
     /**
-     * Returns the path to the file holding the last update check
+     * Handle presto/default/do-something console commands
      *
-     * @return string
+     * The first line of this method docblock is displayed as the description
+     * of the Console Command in ./craft help
+     *
+     * @return mixed
      */
-    private function getUpdatePath()
+    public function actionDoSomething()
     {
-        return Craft::$app->path->getRuntimePath() . '/prestoPurgeEvents.txt';
-    }
+        $result = 'something';
 
-    /**
-     * Updates last update check to the current time, formatted to be equivalent to
-     * DateTimes stored in the database
-     *
-     * @throws \yii\base\ErrorException
-     */
-    private function writeUpdateTime()
-    {
-        FileHelper::writeToFile(
-            $this->getUpdatePath(),
-            $this->prestoService->getDateTime()->format('Y-m-d H:i:s')
-        );
+        echo "Welcome to the console DefaultController actionDoSomething() method\n";
+
+        return $result;
     }
 }

@@ -2,11 +2,29 @@
 
 Presto is a static file extension for the native [Craft cache](https://docs.craftcms.com/v3/templating/tags/cache.html). It works alongside standard Twig `{% cache %}` tag pairs and includes cache-busting features. Just like standard caching, Presto is automatic. Simply install, update your layouts, and then the cache will bust automatically as you create, update, or delete content.
 
+## Requirements
+
+This plugin requires Craft CMS 3.0.0 or later.
+
+## Installation
+
+To install the plugin, follow these instructions.
+
+1. Open your terminal and go to your Craft project:
+
+        cd /path/to/project
+
+2. Then tell Composer to load the plugin:
+
+        composer require lewiscom/presto
+
+3. In the Control Panel, go to Settings → Plugins and click the “Install” button for Presto.
+
 ## Setup Guide
 
 ### Step 1 -  Turn off element query caching
 
-Turn off [element query caching](https://craftcms.com/docs/config-settings#cacheElementQueries) in your general config file. This will stop the `DeleteStaleTemplateCaches` task from running in the admin. Since Presto busts the entire cache when a new element is saved, element query caching is not necessary.
+Turn off [element query caching](https://docs.craftcms.com/v3/config/config-settings.html#cacheelementqueries) in your general config file. This will stop the `DeleteStaleTemplateCaches` task from running in the admin. Since Presto busts the entire cache when a new element is saved, element query caching is not necessary.
 
 ```php
 'cacheElementQueries' => false
@@ -185,4 +203,4 @@ If an entry exists in the CMS but is not displayed on the site (e.g. status is d
 
 ## License
 
-Copyright 2017 [Lewis Communications, LLC](http://www.lewiscommunications.com). Licensed under the [Apache License, Version 2.0](LICENSE).
+Copyright 2018 [Lewis Communications, LLC](http://www.lewiscommunications.com). Licensed under the [Apache License, Version 2.0](LICENSE.md).

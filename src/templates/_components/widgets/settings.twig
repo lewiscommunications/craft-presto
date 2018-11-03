@@ -1,0 +1,11 @@
+{% import "_includes/forms" as forms %}
+
+{% do view.registerAssetBundle("lewiscom\\presto\\assetbundles\\presto\\PrestoAsset") %}
+
+{{ forms.textField({
+    label: 'Message',
+    instructions: 'Enter a message here.',
+    id: 'message',
+    name: 'message',
+    value: widget['message']})
+}}

@@ -2,60 +2,81 @@
 
 namespace lewiscom\presto;
 
+use craft\services\Elements;
+use craft\services\Structures;
+use lewiscom\presto\services\CacheService as CacheService;
+use lewiscom\presto\services\EventHandlerService;
+use lewiscom\presto\variables\PrestoVariable;
+use lewiscom\presto\twigextensions\PrestoTwigExtension;
+use lewiscom\presto\models\Settings;
+use lewiscom\presto\widgets\PrestoWidget;
+
 use Craft;
 use craft\base\Plugin;
 use craft\console\Application as ConsoleApplication;
-use craft\events\ElementActionEvent;
-use craft\events\ElementEvent;
-use craft\events\MoveElementEvent;
-use craft\events\PluginEvent;
-use craft\services\Elements;
-use craft\services\Plugins;
-use craft\services\Structures;
 use craft\web\UrlManager;
 use craft\web\twig\variables\CraftVariable;
+use craft\services\Dashboard;
+use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
-use lewiscom\presto\models\Settings;
-use lewiscom\presto\variables\PrestoVariable;
+
 use yii\base\Event;
 
+/**
+ * Class Presto
+ *
+ * @package lewiscom\presto
+ * @property CacheService $cacheService
+ * @property EventHandlerService $eventHandlerService
+ * @property Settings $settings
+ * @method Settings getSettings()
+ */
 class Presto extends Plugin
 {
     /**
-     * Static property that is an instance of this plugin class so that it can be accessed via
-     * Presto::$plugin
+     * Static property that is an instance of this plugin class so that it can
+     * be accessed via Presto::$plugin
      *
      * @var Presto
      */
     public static $plugin;
 
     /**
-     * To execute your plugin’s migrations, you’ll need to increase its schema version.
+     * To execute your plugin’s migrations, you’ll need to increase its
+     * schema version.
      *
      * @var string
      */
-    public $schemaVersion = '2.0.0';
+    public $schemaVersion = '1.0.0';
 
     /**
-     * @var array
-     */
-    private $caches;
-
-    /**
-     * Init
+     * Initialize plugin
      */
     public function init()
     {
         parent::init();
-
         self::$plugin = $this;
+
+        // Add in our Twig extensions
+        Craft::$app->view->registerTwigExtension(new PrestoTwigExtension());
 
         // Add in our console commands
         if (Craft::$app instanceof ConsoleApplication) {
             $this->controllerNamespace = 'lewiscom\presto\console\controllers';
         }
 
+        // Set the services on the instance, so you can access them by
+        // $this->{serviceName}
+        $this->setComponents([
+            'cacheService' => CacheService::class,
+            'eventHandlerService' => EventHandlerService::class,
+        ]);
+
+        // Register everything
         $this->registerEvents();
+        $this->registerVariables();
+        $this->registerRoutes();
+        $this->registerWidgets();
 
         Craft::info(
             Craft::t(
@@ -65,97 +86,6 @@ class Presto extends Plugin
             ),
             __METHOD__
         );
-    }
-
-    /**
-     * Save default settings
-     *
-     * @param PluginEvent $event
-     */
-    public function handleAfterInstallEvent(PluginEvent $event)
-    {
-        if ($event->plugin === $this) {
-            Craft::$app->plugins->savePluginSettings(
-                $this,
-                [
-                    'cachePath' => '/cache',
-                    'rootPath' => $_SERVER['DOCUMENT_ROOT'],
-                    'purgeMethod' => 'immediate',
-                ]
-            );
-        }
-    }
-
-    /**
-     * Process element on save
-     *
-     * @param ElementEvent $event
-     */
-    public function handleSaveElementEvent(ElementEvent $event)
-    {
-        $this->triggerPurge($event->isNew);
-    }
-
-    /**
-     * Process batch element actions
-     *
-     * @param ElementActionEvent $event
-     */
-    public function handleBeforePerformActionEvent(ElementActionEvent $event)
-    {
-        if (! $event->action->isDestructive()) {
-            $caches = $this->prestoService->getRelatedTemplateCaches(
-                $event->criteria->ids()
-            );
-
-            if (count($caches)) {
-                $this->triggerPurge(false, $caches);
-            } else {
-                $this->triggerPurge(true);
-            }
-        }
-    }
-
-    /**
-     * Process element before saving
-     *
-     * @param ElementEvent $event
-     */
-    public function handleBeforeSaveElementEvent(ElementEvent $event)
-    {
-        if (! $event->isNew && ! $this->caches) {
-            $this->caches = $this->prestoService->getRelatedTemplateCaches(
-                $event->element->id
-            );
-        }
-    }
-
-    /**
-     * Process deleted elements
-     *
-     * @param ElementEvent $event
-     */
-    public function handleBeforeDeleteElementEvent(ElementEvent $event)
-    {
-        $caches = $this->prestoService->getRelatedTemplateCaches(
-            $event->element->id
-        );
-
-        $this->triggerPurge(false, $caches);
-    }
-
-    /**
-     * Process structure reordering
-     *
-     * @param MoveElementEvent $event
-     */
-    public function handleBeforeMoveElementEvent(MoveElementEvent $event)
-    {
-        $caches = $this->prestoService->getRelatedTemplateCaches(
-            $event->element->id
-        );
-
-        $this->triggerPurge(false, $caches);
     }
 
     /**
@@ -169,9 +99,6 @@ class Presto extends Plugin
     }
 
     /**
-     * Returns the rendered settings HTML, which will be inserted into the content
-     * block on the settings page.
-     *
      * @return string
      * @throws \Twig_Error_Loader
      * @throws \yii\base\Exception
@@ -187,10 +114,74 @@ class Presto extends Plugin
     }
 
     /**
-     * Register all necessary events
+     * Register Events
      */
     private function registerEvents()
     {
+        // After an element is saved
+        Event::on(
+            Elements::class,
+            Elements::EVENT_AFTER_SAVE_ELEMENT,
+            [$this->eventHandlerService, 'handleAfterSaveElementEvent']
+        );
+
+        // Before an element is saved
+        Event::on(
+            Elements::class,
+            Elements::EVENT_BEFORE_SAVE_ELEMENT,
+            [$this->eventHandlerService, 'handleBeforeSaveElementEvent']
+        );
+
+        // Before an element is deleted
+        Event::on(
+            Elements::class,
+            Elements::EVENT_BEFORE_DELETE_ELEMENT,
+            [$this->eventHandlerService, 'handleBeforeDeleteElementEvent']
+        );
+
+        // Before an action is performed
+        Event::on(
+            Elements::class,
+            Elements::EVENT_BEFORE_PERFORM_ACTION,
+            [$this->eventHandlerService, 'handleBeforePerformActionEvent']
+        );
+
+        // Before an element is moved
+        Event::on(
+            Structures::class,
+            Structures::EVENT_BEFORE_MOVE_ELEMENT,
+            [$this->eventHandlerService, 'handleBeforeMoveElementEvent']
+        );
+    }
+
+    /**
+     * Register Widgets
+     */
+    private function registerWidgets()
+    {
+        Event::on(
+            Dashboard::class,
+            Dashboard::EVENT_REGISTER_WIDGET_TYPES,
+            function (RegisterComponentTypesEvent $event) {
+                $event->types[] = PrestoWidget::class;
+            }
+        );
+    }
+
+    /**
+     * Register routes
+     */
+    private function registerRoutes()
+    {
+        // Register our site routes
+        Event::on(
+            UrlManager::class,
+            UrlManager::EVENT_REGISTER_SITE_URL_RULES,
+            function (RegisterUrlRulesEvent $event) {
+                $event->rules['siteActionTrigger1'] = 'presto/default';
+            }
+        );
+
         // Register our CP routes
         Event::on(
             UrlManager::class,
@@ -199,89 +190,21 @@ class Presto extends Plugin
                 $event->rules['cpActionTrigger1'] = 'presto/default/do-something';
             }
         );
+    }
 
-        // Save default settings
-        Event::on(
-            Plugins::class,
-            Plugins::EVENT_AFTER_INSTALL_PLUGIN,
-            [$this, 'handleAfterInstallEvent']
-        );
-
-        // After an element is saved
-        Event::on(
-            Elements::class,
-            Elements::EVENT_AFTER_SAVE_ELEMENT,
-            [$this, 'handleSaveElementEvent']
-        );
-
-        // After an action is performed
-        Event::on(
-            Elements::class,
-            Elements::EVENT_BEFORE_PERFORM_ACTION,
-            [$this, 'handleBeforePerformActionEvent']
-        );
-
-        // Before an element is saved
-        Event::on(
-            Elements::class,
-            Elements::EVENT_BEFORE_SAVE_ELEMENT,
-            [$this, 'handleBeforeSaveElementEvent']
-        );
-
-        // Before an element is deleted
-        Event::on(
-            Elements::class,
-            Elements::EVENT_BEFORE_DELETE_ELEMENT,
-            [$this, 'handleBeforeDeleteElementEvent']
-        );
-
-        // Before an element is moved
-        Event::on(
-            Structures::class,
-            Structures::EVENT_BEFORE_MOVE_ELEMENT,
-            [$this, 'handleBeforeMoveElementEvent']
-        );
-
-        // Register our variables
+    /**
+     * Register any variables
+     */
+    private function registerVariables()
+    {
         Event::on(
             CraftVariable::class,
             CraftVariable::EVENT_INIT,
             function (Event $event) {
-                $event->sender->set('presto', PrestoVariable::class);
+                /** @var CraftVariable $variable */
+                $variable = $event->sender;
+                $variable->set('presto', PrestoVariable::class);
             }
         );
-    }
-
-    /**
-     * Triggers purging the Presto cache, checking whether to trigger immediate or cron
-     *
-     * @param bool $all
-     * @param array $caches
-     */
-    private function triggerPurge($all = false, $caches = [])
-    {
-        $immediate = $this->getSettings()->purgeMethod === 'immediate';
-
-        if ($all) {
-            Craft::$app->templateCaches->deleteAllCaches();
-
-            if ($immediate) {
-                $this->prestoService->purgeEntireCache();
-            } else {
-                $this->prestoService->storePurgeAllEvent();
-            }
-        } else if (count($caches) || $this->caches) {
-            $caches = count($caches) ? $caches : $this->caches;
-
-            if ($immediate) {
-                $this->prestoService->purgeCache(
-                    $this->prestoService->formatPaths($caches)
-                );
-            } else {
-                $this->prestoService->storePurgeEvent(
-                    $this->prestoService->formatPaths($caches)
-                );
-            }
-        }
     }
 }

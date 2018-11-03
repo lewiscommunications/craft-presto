@@ -2,41 +2,50 @@
 
 {% do view.registerAssetBundle("lewiscom\\presto\\assetbundles\\presto\\PrestoAsset") %}
 
-<input type="hidden" name="rootPath" value="{{ settings.rootPath }}">
+{{ forms.autosuggestField({
+    label: 'Root Path'|t('presto'),
+    instructions: 'The path to your document root'|t('presto'),
+    id: 'rootPath',
+    name: 'rootPath',
+    value: settings.rootPath,
+    suggestions: craft.cp.getEnvSuggestions(true),
+    required: true,
+    placeholder: '/path/to/folder',
+}) }}
 
-{{ forms.textField({
-    label: 'Cache Location'|t,
-    instructions: 'Relative path to the cache directory from the public root.'|t,
+{{ forms.autosuggestField({
+    label: 'Cache Path'|t('presto'),
+    instructions: 'The name of the cache folder'|t('presto'),
+    id: 'cachePath',
     name: 'cachePath',
     value: settings.cachePath,
-    first: true
+    suggestions: craft.cp.getEnvSuggestions(true),
+    required: true,
+    placeholder: '/cache',
 }) }}
 
-{{ forms.selectField({
-    label: 'Purge Method'|t,
-    instructions: 'The method used to purge the cache',
-    name: 'purgeMethod',
-    value: settings.purgeMethod,
-    options: {
-        immediate: 'Immediate',
-        cron: 'Cron'
-    }
+{{ forms.checkboxField({
+    label: 'Cache pages for logged in users'|t('presto'),
+    id: 'cacheWhenLoggedIn',
+    name: 'cacheWhenLoggedIn',
+    checked: settings.cacheWhenLoggedIn,
 }) }}
 
-{% set cron = settings.purgeMethod == 'cron' %}
+{{ forms.checkboxField({
+    label: 'Enable cache warming'|t('presto'),
+    instructions: 'Warm the cache when an entry is modified'|t('presto'),
+    id: 'warmCache',
+    name: 'warmCache',
+    checked: settings.warmCache,
+}) }}
 
 <hr>
 
 <div class="field">
     <div class="heading">
-        <label>Cache Purge</label>
         <div class="instructions">
-            {% if cron %}
-                Schedules purge of all static caches.
-            {% else %}
-                Purges all static and template caches.
-            {% endif %}
+            Purges all static and template caches.
         </div>
     </div>
-    <a class="btn submit" href="{{ actionUrl('presto/default/purge-cache') }}">{{ cron ? 'Schedule Purge' : 'Purge Cache' }}</a>
+    <a class="btn submit" href="{{ actionUrl('presto/default/purge-cache') }}">Purge Cache</a>
 </div>

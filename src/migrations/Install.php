@@ -1,45 +1,81 @@
 <?php
+/**
+ * Presto plugin for Craft CMS 3.x
+ *
+ * A static cache plugin for Craft CMS 3.x
+ *
+ * @link      https://www.lewiscommunications.com
+ * @copyright Copyright (c) 2018 Lewis Communications
+ */
 
 namespace lewiscom\presto\migrations;
 
+use lewiscom\presto\Presto;
+
 use Craft;
+use craft\config\DbConfig;
 use craft\db\Migration;
 
+/**
+ * Presto Install Migration
+ *
+ * If your plugin needs to create any custom database tables when it gets installed,
+ * create a migrations/ folder within your plugin folder, and save an Install.php file
+ * within it using the following template:
+ *
+ * If you need to perform any additional actions on install/uninstall, override the
+ * safeUp() and safeDown() methods.
+ *
+ * @author    Lewis Communications
+ * @package   Presto
+ * @since     1
+ */
 class Install extends Migration
 {
+    // Public Properties
+    // =========================================================================
+
     /**
      * @var string The database driver to use
      */
     public $driver;
 
-    /**
-     * @var string The table name
-     */
-    private $tableName = '{{%presto_cachepurge}}';
+    // Public Methods
+    // =========================================================================
 
     /**
-     * Apply migration
+     * This method contains the logic to be executed when applying this migration.
+     * This method differs from [[up()]] in that the DB logic implemented here will
+     * be enclosed within a DB transaction.
+     * Child classes may implement this method instead of [[up()]] if the DB logic
+     * needs to be within a transaction.
      *
-     * @return bool
+     * @return boolean return a false value to indicate the migration fails
+     * and should not proceed further. All other return values mean the migration succeeds.
      */
     public function safeUp()
     {
         $this->driver = Craft::$app->getConfig()->getDb()->driver;
-
         if ($this->createTables()) {
             $this->createIndexes();
             $this->addForeignKeys();
-
             // Refresh the db schema caches
             Craft::$app->db->schema->refresh();
+            $this->insertDefaultData();
         }
 
         return true;
     }
 
     /**
-     * Undo migration
-     * @return bool
+     * This method contains the logic to be executed when removing this migration.
+     * This method differs from [[down()]] in that the DB logic implemented here will
+     * be enclosed within a DB transaction.
+     * Child classes may implement this method instead of [[down()]] if the DB logic
+     * needs to be within a transaction.
+     *
+     * @return boolean return a false value to indicate the migration fails
+     * and should not proceed further. All other return values mean the migration succeeds.
      */
     public function safeDown()
     {
@@ -48,6 +84,9 @@ class Install extends Migration
 
         return true;
     }
+
+    // Protected Methods
+    // =========================================================================
 
     /**
      * Creates the tables needed for the Records used by the plugin
@@ -58,23 +97,20 @@ class Install extends Migration
     {
         $tablesCreated = false;
 
-        $tableSchema = Craft::$app->db->schema->getTableSchema($this->tableName);
-
+    // presto_prestorecord table
+        $tableSchema = Craft::$app->db->schema->getTableSchema('{{%presto_prestorecord}}');
         if ($tableSchema === null) {
             $tablesCreated = true;
-
             $this->createTable(
-                $this->tableName,
+                '{{%presto_prestorecord}}',
                 [
                     'id' => $this->primaryKey(),
                     'dateCreated' => $this->dateTime()->notNull(),
                     'dateUpdated' => $this->dateTime()->notNull(),
                     'uid' => $this->uid(),
-                    'siteId' => $this->integer(),
-
-                    // Custom columns in the table
-                    'purgedAt' => $this->dateTime()->notNull(),
-                    'paths' => $this->string(255),
+                // Custom columns in the table
+                    'siteId' => $this->integer()->notNull(),
+                    'some_field' => $this->string(255)->notNull()->defaultValue(''),
                 ]
             );
         }
@@ -89,16 +125,24 @@ class Install extends Migration
      */
     protected function createIndexes()
     {
+    // presto_prestorecord table
         $this->createIndex(
             $this->db->getIndexName(
-                $this->tableName,
-                'purgedAt',
-                false
+                '{{%presto_prestorecord}}',
+                'some_field',
+                true
             ),
-            $this->tableName,
-            'purgedAt',
-            false
+            '{{%presto_prestorecord}}',
+            'some_field',
+            true
         );
+        // Additional commands depending on the db driver
+        switch ($this->driver) {
+            case DbConfig::DRIVER_MYSQL:
+                break;
+            case DbConfig::DRIVER_PGSQL:
+                break;
+        }
     }
 
     /**
@@ -108,9 +152,10 @@ class Install extends Migration
      */
     protected function addForeignKeys()
     {
+    // presto_prestorecord table
         $this->addForeignKey(
-            $this->db->getForeignKeyName($this->tableName, 'siteId'),
-            $this->tableName,
+            $this->db->getForeignKeyName('{{%presto_prestorecord}}', 'siteId'),
+            '{{%presto_prestorecord}}',
             'siteId',
             '{{%sites}}',
             'id',
@@ -120,12 +165,22 @@ class Install extends Migration
     }
 
     /**
+     * Populates the DB with the default data.
+     *
+     * @return void
+     */
+    protected function insertDefaultData()
+    {
+    }
+
+    /**
      * Removes the tables needed for the Records used by the plugin
      *
      * @return void
      */
     protected function removeTables()
     {
-        $this->dropTableIfExists($this->tableName);
+    // presto_prestorecord table
+        $this->dropTableIfExists('{{%presto_prestorecord}}');
     }
 }
