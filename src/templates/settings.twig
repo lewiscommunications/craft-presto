@@ -2,38 +2,69 @@
 
 {% do view.registerAssetBundle("lewiscom\\presto\\assetbundles\\presto\\PrestoAsset") %}
 
-{{ forms.autosuggestField({
+{{ forms.textField({
     label: 'Root Path'|t('presto'),
     instructions: 'The path to your document root'|t('presto'),
     id: 'rootPath',
     name: 'rootPath',
     value: settings.rootPath,
-    suggestions: craft.cp.getEnvSuggestions(true),
     required: true,
     placeholder: '/path/to/folder',
 }) }}
 
-{{ forms.autosuggestField({
+{{ forms.textField({
     label: 'Cache Path'|t('presto'),
     instructions: 'The name of the cache folder'|t('presto'),
     id: 'cachePath',
     name: 'cachePath',
     value: settings.cachePath,
-    suggestions: craft.cp.getEnvSuggestions(true),
     required: true,
     placeholder: '/cache',
 }) }}
 
-{{ forms.autosuggestField({
+{{ forms.textField({
     label: 'Sitemap Index'|t('presto'),
     instructions: 'The public path to your sitemap index'|t('presto'),
     id: 'sitemapIndex',
     name: 'sitemapIndex',
     value: settings.sitemapIndex,
-    suggestions: craft.cp.getEnvSuggestions(true),
     required: true,
     placeholder: '@cdnUrl/sitemaps/index.xml',
 }) }}
+
+{#TODO: When Craft 3.1 is released#}
+{#{{ forms.autosuggestField({#}
+    {#label: 'Root Path'|t('presto'),#}
+    {#instructions: 'The path to your document root'|t('presto'),#}
+    {#id: 'rootPath',#}
+    {#name: 'rootPath',#}
+    {#value: settings.rootPath,#}
+    {#suggestions: craft.cp.getEnvSuggestions(true),#}
+    {#required: true,#}
+    {#placeholder: '/path/to/folder',#}
+{#}) }}#}
+
+{#{{ forms.autosuggestField({#}
+    {#label: 'Cache Path'|t('presto'),#}
+    {#instructions: 'The name of the cache folder'|t('presto'),#}
+    {#id: 'cachePath',#}
+    {#name: 'cachePath',#}
+    {#value: settings.cachePath,#}
+    {#suggestions: craft.cp.getEnvSuggestions(true),#}
+    {#required: true,#}
+    {#placeholder: '/cache',#}
+{#}) }}#}
+
+{#{{ forms.autosuggestField({#}
+    {#label: 'Sitemap Index'|t('presto'),#}
+    {#instructions: 'The public path to your sitemap index'|t('presto'),#}
+    {#id: 'sitemapIndex',#}
+    {#name: 'sitemapIndex',#}
+    {#value: settings.sitemapIndex,#}
+    {#suggestions: craft.cp.getEnvSuggestions(true),#}
+    {#required: true,#}
+    {#placeholder: '@cdnUrl/sitemaps/index.xml',#}
+{#}) }}#}
 
 {{ forms.checkboxField({
     label: 'Cache pages for logged in users'|t('presto'),

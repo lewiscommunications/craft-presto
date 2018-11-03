@@ -11,7 +11,6 @@ use craft\helpers\FileHelper;
 use RecursiveIteratorIterator;
 use RecursiveDirectoryIterator;
 
-
 class CacheService extends Component
 {
     /**
