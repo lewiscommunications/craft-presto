@@ -240,7 +240,7 @@ class CacheService extends Component
         return http_response_code() === 200 &&
             ! $request->isLivePreview &&
             ! $request->isPost && (! isset($config['static']) ||
-            $config['static'] !== false);
+            isset($config['static']) && $config['static'] !== false);
     }
 
     public function hasCaches()
