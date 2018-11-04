@@ -61,6 +61,8 @@ class Presto extends Plugin
             $this->controllerNamespace = 'lewiscom\presto\console\controllers';
         }
 
+        dd($this->cacheService->getAllCacheKeys());
+
         // Set the services on the instance, so you can access them by
         // $this->{serviceName}
         $this->setComponents([

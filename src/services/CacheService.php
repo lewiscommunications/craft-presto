@@ -135,19 +135,13 @@ class CacheService extends Component
      */
     public function getAllCacheKeys()
     {
-        $keys = [];
-
         $results = (new Query())
             ->select('cacheKey')
             ->from(['{{%templatecaches}}'])
             ->distinct()
             ->all();
 
-        foreach ($results as $result) {
-            $keys = array_merge($keys,  array_values($result));
-        }
-
-        return $keys;
+        return array_column($results, 'cacheKey');
     }
 
     /**
