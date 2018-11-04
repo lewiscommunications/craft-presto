@@ -45,9 +45,7 @@ class EventHandlerService extends Component
             Craft::$app
                 ->getQueue()
                 ->push(new WarmCacheTask([
-                    'urls' => [
-                        $event->element->url,
-                    ],
+                    'urls' => $this->cacheService->getUrlsFromCacheKeys(),
                 ]));
         }
     }
@@ -64,7 +62,9 @@ class EventHandlerService extends Component
                 $event->element->id
             ]);
         } else if ($event->isNew && ! $this->cacheService->caches) {
-            $entries = Entry::find()->where(['sectionId' => '2'])->all();
+            $entries = Entry::find()->where([
+                'sectionId' => $event->element->sectionId
+            ])->all();
 
             $caches = array_map(function($entry) {
                 return $entry->id;

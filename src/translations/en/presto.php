@@ -2,7 +2,9 @@
 
 return [
     'Presto' => 'Presto',
-    'Presto plugin loaded' => 'Presto plugin loaded',
+    '{name} plugin loaded' => '{name} plugin loaded',
+    '{url} - request successful.' => '{url} - request successful.',
+    '{url} - request failed with status code {statusCode}.' => '{url} - request failed with status code {statusCode}.',
     'Root Path' => 'Root Path',
     'The path to your document root' => 'The path to your document root',
     'Cache Path' => 'Cache Path',

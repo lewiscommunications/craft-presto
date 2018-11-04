@@ -114,6 +114,21 @@ class CacheService extends Component
     }
 
     /**
+     * Generates urls from cache keys
+     *
+     * @param array $caches
+     * @return array
+     */
+    public function getUrlsFromCacheKeys(array $caches = [])
+    {
+        $caches = count($caches) ? $caches : $this->caches;
+
+        return array_map(function($key) {
+            return preg_replace('/\|(home)?/', '', $key);
+        }, array_column($caches, 'cacheKey'));
+    }
+
+    /**
      * Gets all of the cache keys
      *
      * @return array
@@ -220,17 +235,18 @@ class CacheService extends Component
 
     /**
      * Check if request is a valid get request that is not in live
-     * preview mode
+     * preview mode and th
      *
      * @return bool
      */
-    public function isCacheable()
+    public function isCacheable(array $config = [])
     {
         $request = Craft::$app->request;
 
         return http_response_code() === 200 &&
             ! $request->isLivePreview &&
-            ! $request->isPost;
+            ! $request->isPost && (! isset($config['static']) ||
+            $config['static'] !== false);
     }
 
     public function hasCaches()
