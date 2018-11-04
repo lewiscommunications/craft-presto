@@ -60,9 +60,7 @@ class CacheService extends Component
             Craft::$app->templateCaches->deleteCachesByKey($caches);
 
             if ($immediate) {
-                $this->purgeCache(
-                    $this->formatPaths($caches)
-                );
+                $this->purgeCache(array_column($caches, 'cacheKey'));
             } else {
                 // TODO
                 //$this->storePurgeEvent(
@@ -352,22 +350,5 @@ class CacheService extends Component
             '',
             $html
         ));
-    }
-
-    /**
-     * Format cacheKey arrays into an array of paths
-     *
-     * @param $caches
-     * @return array
-     */
-    private function formatPaths($caches)
-    {
-        $paths = [];
-
-        foreach ($caches as $cache) {
-            $paths[] = $cache['cacheKey'];
-        }
-
-        return $paths;
     }
 }
