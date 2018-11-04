@@ -111,7 +111,7 @@ class Presto extends Plugin
     }
 
     /**
-     * Register Events
+     * Register events
      */
     private function registerEvents()
     {
@@ -152,7 +152,7 @@ class Presto extends Plugin
     }
 
     /**
-     * Register Widgets
+     * Register widgets
      */
     private function registerWidgets()
     {
@@ -181,7 +181,7 @@ class Presto extends Plugin
     }
 
     /**
-     * Register any variables
+     * Register variables
      */
     private function registerVariables()
     {

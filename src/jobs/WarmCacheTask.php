@@ -58,40 +58,6 @@ class WarmCacheTask extends BaseJob
 
         // Force the pool of requests to complete.
         $promise->wait();
-
-        //foreach ($this->urls as $url) {
-        //    $response = $client->request(
-        //        'GET',
-        //        $url,
-        //        [
-        //            'verify' => false,
-        //            'exceptions' => false,
-        //        ]
-        //    );
-        //
-        //    if ($response->getStatusCode() === 200) {
-        //        Craft::info(
-        //            Craft::t(
-        //                'presto',
-        //                '{url} - request successful.',
-        //                ['url' => 'https://caddis.co']
-        //            ),
-        //            __METHOD__
-        //        );
-        //    } else {
-        //        Craft::info(
-        //            Craft::t(
-        //                'presto',
-        //                '{url} - request failed with status code {statusCode}.',
-        //                [
-        //                    'url' => 'https://caddis.co',
-        //                    'statusCode' => $response->getStatusCode()
-        //                ]
-        //            ),
-        //            __METHOD__
-        //        );
-        //    }
-        //}
     }
 
     /**
