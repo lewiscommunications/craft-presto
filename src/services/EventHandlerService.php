@@ -5,11 +5,11 @@ namespace lewiscom\presto\services;
 use Craft;
 use craft\base\Component;
 use craft\elements\Entry;
-use lewiscom\presto\jobs\WarmCacheTask;
 use lewiscom\presto\Presto;
 use craft\events\ElementEvent;
 use craft\events\MoveElementEvent;
 use craft\events\ElementActionEvent;
+use lewiscom\presto\jobs\WarmCacheTask;
 
 class EventHandlerService extends Component
 {
