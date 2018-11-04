@@ -72,7 +72,6 @@ class PrestoVariable
     public function cache($config = [])
     {
         $this->config = $config;
-        Presto::$plugin->crawlerService->crawl('https://usahealth.dev/sitemaps/index.xml');
 
         $keySegments = [
             'host' => $this->host,
