@@ -6,6 +6,8 @@ use Craft;
 use craft\db\Migration;
 use craft\config\DbConfig;
 use lewiscom\presto\Presto;
+use lewiscom\presto\records\PrestoCacheRecord;
+use lewiscom\presto\records\PrestoPurgeRecord;
 
 class Install extends Migration
 {
@@ -15,17 +17,30 @@ class Install extends Migration
     public $driver;
 
     /**
+     * @var string
+     */
+    public $cacheRecordTableName;
+
+    /**
+     * @var string
+     */
+    public $purgeRecordTableName;
+
+    /**
      * @return bool
      */
     public function safeUp()
     {
+        $this->cacheRecordTableName = PrestoCacheRecord::tableName();
+        $this->purgeRecordTableName = PrestoPurgeRecord::tableName();
+
         $this->driver = Craft::$app->getConfig()->getDb()->driver;
+
         if ($this->createTables()) {
             $this->createIndexes();
             $this->addForeignKeys();
             // Refresh the db schema caches
             Craft::$app->db->schema->refresh();
-            $this->insertDefaultData();
         }
 
         return true;
@@ -51,20 +66,35 @@ class Install extends Migration
     {
         $tablesCreated = false;
 
-    // presto_prestorecord table
-        $tableSchema = Craft::$app->db->schema->getTableSchema('{{%presto_prestorecord}}');
+        $tableSchema = Craft::$app->db->schema->getTableSchema($this->cacheRecordTableName);
+
         if ($tableSchema === null) {
             $tablesCreated = true;
             $this->createTable(
-                '{{%presto_prestorecord}}',
+                $this->cacheRecordTableName,
                 [
                     'id' => $this->primaryKey(),
+                    'siteId' => $this->integer()->notNull(),
+                    'cacheId' => $this->integer()->notNull(),
+                    'url' => $this->string()->notNull(),
+                    'group' => $this->string(),
                     'dateCreated' => $this->dateTime()->notNull(),
                     'dateUpdated' => $this->dateTime()->notNull(),
                     'uid' => $this->uid(),
-                // Custom columns in the table
+                ]
+            );
+
+            $this->createTable(
+                $this->purgeRecordTableName,
+                [
+                    'id' => $this->primaryKey(),
                     'siteId' => $this->integer()->notNull(),
-                    'some_field' => $this->string(255)->notNull()->defaultValue(''),
+                    'purgedAt' => $this->dateTime()->notNull(),
+                    'paths' => $this->text()->notNull(),
+                    'group' => $this->string(),
+                    'dateCreated' => $this->dateTime()->notNull(),
+                    'dateUpdated' => $this->dateTime()->notNull(),
+                    'uid' => $this->uid(),
                 ]
             );
         }
@@ -79,24 +109,27 @@ class Install extends Migration
      */
     protected function createIndexes()
     {
-    // presto_prestorecord table
         $this->createIndex(
             $this->db->getIndexName(
-                '{{%presto_prestorecord}}',
-                'some_field',
+                $this->cacheRecordTableName,
+                'id',
                 true
             ),
-            '{{%presto_prestorecord}}',
-            'some_field',
+            $this->cacheRecordTableName,
+            'id',
             true
         );
-        // Additional commands depending on the db driver
-        switch ($this->driver) {
-            case DbConfig::DRIVER_MYSQL:
-                break;
-            case DbConfig::DRIVER_PGSQL:
-                break;
-        }
+
+        $this->createIndex(
+            $this->db->getIndexName(
+                $this->purgeRecordTableName,
+                'purgedAt',
+                false
+            ),
+            $this->purgeRecordTableName,
+            'purgedAt',
+            false
+        );
     }
 
     /**
@@ -106,10 +139,32 @@ class Install extends Migration
      */
     protected function addForeignKeys()
     {
-        // presto_prestorecord table
+        // Add siteId foreign key to cache record table
         $this->addForeignKey(
-            $this->db->getForeignKeyName('{{%presto_prestorecord}}', 'siteId'),
-            '{{%presto_prestorecord}}',
+            $this->db->getForeignKeyName($this->cacheRecordTableName, 'siteId'),
+            $this->cacheRecordTableName,
+            'siteId',
+            '{{%sites}}',
+            'id',
+            'CASCADE',
+            'CASCADE'
+        );
+
+        // Add cacheId key to cache record table
+        $this->addForeignKey(
+            $this->db->getForeignKeyName($this->cacheRecordTableName, 'cacheId'),
+            $this->cacheRecordTableName,
+            'cacheId',
+            '{{%templatecaches}}',
+            'id',
+            'CASCADE',
+            'CASCADE'
+        );
+
+        // Add siteId foreign key to purge record table
+        $this->addForeignKey(
+            $this->db->getForeignKeyName($this->purgeRecordTableName, 'siteId'),
+            $this->purgeRecordTableName,
             'siteId',
             '{{%sites}}',
             'id',
@@ -119,22 +174,13 @@ class Install extends Migration
     }
 
     /**
-     * Populates the DB with the default data.
-     *
-     * @return void
-     */
-    protected function insertDefaultData()
-    {
-    }
-
-    /**
      * Removes the tables needed for the Records used by the plugin
      *
      * @return void
      */
     protected function removeTables()
     {
-    // presto_prestorecord table
-        $this->dropTableIfExists('{{%presto_prestorecord}}');
+        $this->dropTableIfExists($this->cacheRecordTableName);
+        $this->dropTableIfExists($this->purgeRecordTableName);
     }
 }

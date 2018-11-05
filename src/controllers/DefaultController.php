@@ -95,7 +95,7 @@ class DefaultController extends Controller
         $referrer = explode('/', Craft::$app->request->referrer);
         $path = end($referrer) === 'dashboard'
             ? '/dashboard'
-            : 'settings/plugins/presto';
+            : '/presto/settings/general';
 
         return $this->redirect(UrlHelper::cpUrl($path));
     }

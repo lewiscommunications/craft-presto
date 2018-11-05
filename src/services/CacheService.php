@@ -3,6 +3,7 @@
 namespace lewiscom\presto\services;
 
 use Craft;
+use lewiscom\presto\events\CacheEvent;
 use RegexIterator;
 use craft\db\Query;
 use craft\base\Component;
@@ -10,6 +11,7 @@ use lewiscom\presto\Presto;
 use craft\helpers\FileHelper;
 use RecursiveIteratorIterator;
 use RecursiveDirectoryIterator;
+use yii\base\Event;
 
 class CacheService extends Component
 {
@@ -45,9 +47,6 @@ class CacheService extends Component
         $immediate = $this->settings->purgeMethod === 'immediate';
 
         if ($all) {
-            // Delete all of the caches in the Craft template cache table
-            Craft::$app->templateCaches->deleteAllCaches();
-
             if ($immediate) {
                 $this->purgeEntireCache();
             } else {
@@ -56,17 +55,32 @@ class CacheService extends Component
             }
         } else if (count($caches) || count($this->caches)) {
             $caches = count($caches) ? $caches : $this->caches;
+            $keys = array_column($caches, 'cacheKey');
+
+            Event::trigger(
+                Presto::class,
+                Presto::EVENT_BEFORE_PURGE_CACHE,
+                new PurgeEvent([
+                    'cacheKeys' => $keys,
+                ])
+            );
 
             Craft::$app->templateCaches->deleteCachesByKey($caches);
 
             if ($immediate) {
-                $this->purgeCache(array_column($caches, 'cacheKey'));
+                $this->purgeCache();
             } else {
                 // TODO
                 //$this->storePurgeEvent(
                 //    $this->formatPaths($caches)
                 //);
             }
+
+            Event::trigger(
+                Presto::class,
+                Presto::EVENT_AFTER_PURGE_CACHE,
+                new PurgeEvent()
+            );
         }
     }
 
@@ -174,29 +188,66 @@ class CacheService extends Component
      */
     public function purgeEntireCache()
     {
+        Event::trigger(
+            Presto::class,
+            Presto::EVENT_BEFORE_PURGE_CACHE_ALL,
+            new PurgeEvent()
+        );
+        // Delete all of the caches in the Craft template cache table
+        Craft::$app->templateCaches->deleteAllCaches();
+
         $cachePath = $this->getCachePath();
 
         if (file_exists($cachePath)) {
             FileHelper::clearDirectory($cachePath);
         }
+
+        Event::trigger(
+            Presto::class,
+            Presto::EVENT_AFTER_PURGE_CACHE_ALL,
+            new PurgeEvent()
+        );
     }
 
     /**
      * Write the HTML output to a static cache file
      *
-     * @param string $host
-     * @param string $path
-     * @param string $html
-     * @param array $config
+     * @param array $options [
+     *     @param string $host
+     *     @param string $path
+     *     @param string $html
+     *     @param array $config
+     *     @param string $cachKey
+     * ]
      * @throws \yii\base\ErrorException
      */
-    public function write($host, $path, $html, $config = [])
+    public function write($options = [])
     {
+        [
+            'host' => $host,
+            'path' => $path,
+            'html' => $html,
+            'config' => $config,
+            'cacheKey' => $cacheKey
+        ] = $options;
+
         $isGuest = Craft::$app->user->isGuest;
 
         if (! $isGuest && ! $this->settings->cacheWhenLoggedIn) {
             return;
         }
+
+        Event::trigger(
+            Presto::class,
+            Presto::EVENT_BEFORE_GENERATE_CACHE_ITEM,
+            new CacheEvent([
+                'host' => $host,
+                'path' => $path,
+                'html' => $html,
+                'config' => $config,
+                'cacheKey' => $cacheKey
+            ])
+        );
 
         if (! isset($config['static']) || $config['static'] !== false) {
             $pathSegments = array_merge(
@@ -222,6 +273,18 @@ class CacheService extends Component
             $targetFile = $targetPath . DIRECTORY_SEPARATOR . 'index.' . $extension;
 
             FileHelper::writeToFile($targetFile, $this->cleanHtml($html));
+
+            Event::trigger(
+                Presto::class,
+                Presto::EVENT_BEFORE_GENERATE_CACHE_ITEM,
+                new CacheEvent([
+                    'html' => $html,
+                    'cacheKey' => $cacheKey,
+                    'filePath' => $targetFile,
+                    'host' => $host,
+                    'path' => $path
+                ])
+            );
         }
     }
 

@@ -1,0 +1,37 @@
+{% extends 'presto/_layouts/base' %}
+
+{% set title = 'Presto'|t('presto') %}
+
+{% set nav = {
+    general: { heading: 'General'|t('presto') },
+    cachedPages: { title: 'Cached Pages'|t('presto') },
+    settingsHeader: { heading: 'Settings'|t('presto') },
+    'settings/general': { title: 'General'|t('presto') },
+    'settings/cache-warming': { title: 'Cache Warming'|t('presto') },
+} %}
+
+{% set currentPage = craft.app.request.getSegments()|replace('presto', '')|join('/')|trim('/') %}
+{% set docTitle = ((nav[currentPage] ?? false) ? nav[currentPage].title ~ ' | ') ~ title %}
+
+{% block sidebar %}
+    <nav>
+        <ul>
+            {% for handle, item in nav %}
+                {% if item.heading is defined %}
+                    <li class="heading"><span>{{ item.heading }}</span></li>
+                {% else %}
+                    <li>
+                        <a
+                            href="{{ url('presto/' ~ handle) }}"
+                            {% if handle == currentPage %}
+                                class="sel"
+                            {% endif %}
+                        >
+                            {{ item.title }}
+                        </a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </nav>
+{% endblock %}

@@ -3,6 +3,7 @@
 namespace lewiscom\presto;
 
 use Craft;
+use craft\helpers\UrlHelper;
 use yii\base\Event;
 use craft\base\Plugin;
 use craft\web\UrlManager;
@@ -32,6 +33,13 @@ use craft\console\Application as ConsoleApplication;
  */
 class Presto extends Plugin
 {
+    const EVENT_BEFORE_GENERATE_CACHE_ITEM = 'beforeGenerateCacheItem';
+    const EVENT_AFTER_GENERATE_CACHE_ITEM = 'afterGenerateCacheItem';
+    const EVENT_BEFORE_PURGE_CACHE = 'beforePurgeCache';
+    const AFTER_BEFORE_PURGE_CACHE = 'afterPurgeCache';
+    const EVENT_BEFORE_PURGE_CACHE_ALL = 'beforePurgeCacheAll';
+    const AFTER_BEFORE_PURGE_CACHE_ALL = 'afterPurgeCacheAll';
+
     /**
      * Static property that is an instance of this plugin class so that it can
      * be accessed via Presto::$plugin
@@ -96,19 +104,29 @@ class Presto extends Plugin
     }
 
     /**
-     * @return string
-     * @throws \Twig_Error_Loader
-     * @throws \yii\base\Exception
+     * @return mixed|\yii\web\Response
      */
-    protected function settingsHtml(): string
+    public function getSettingsResponse()
     {
-        return Craft::$app->view->renderTemplate(
-            'presto/settings',
-            [
-                'settings' => $this->getSettings()
-            ]
+        return Craft::$app->controller->redirect(
+            UrlHelper::cpUrl('presto/settings/general')
         );
     }
+
+    ///**
+    // * @return string
+    // * @throws \Twig_Error_Loader
+    // * @throws \yii\base\Exception
+    // */
+    //protected function settingsHtml(): string
+    //{
+    //    return Craft::$app->view->renderTemplate(
+    //        'presto/settings',
+    //        [
+    //            'settings' => $this->getSettings()
+    //        ]
+    //    );
+    //}
 
     /**
      * Register events
@@ -170,12 +188,14 @@ class Presto extends Plugin
      */
     private function registerRoutes()
     {
-        // Register our site routes
+        // Register CP routes
         Event::on(
             UrlManager::class,
-            UrlManager::EVENT_REGISTER_SITE_URL_RULES,
+            UrlManager::EVENT_REGISTER_CP_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
-                $event->rules['siteActionTrigger1'] = 'presto/default';
+                $event->rules['presto/settings/general'] = 'presto/general-settings';
+                $event->rules['presto/settings/cache-warming'] = 'presto/cache-warming-settings';
+                $event->rules['presto/cachedPages'] = 'presto/cached-pages';
             }
         );
     }

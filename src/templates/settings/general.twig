@@ -1,0 +1,81 @@
+{% extends 'presto/_layouts/master' %}
+{% import '_includes/forms' as forms %}
+
+{% set fullPageForm = true %}
+
+{% block content %}
+    <input type="hidden" name="action" value="plugins/save-plugin-settings">
+	<input type="hidden" name="pluginHandle" value="presto">
+
+    {{ redirectInput('presto/settings/general') }}
+    {{ csrfInput() }}
+
+    {% namespace 'settings' %}
+
+        {{ forms.textField({
+            label: 'Root Path'|t('presto'),
+            instructions: 'The path to your document root'|t('presto'),
+            id: 'rootPath',
+            name: 'rootPath',
+            value: settings.rootPath,
+            required: true,
+            placeholder: '/path/to/folder',
+        }) }}
+
+        {{ forms.textField({
+            label: 'Cache Path'|t('presto'),
+            instructions: 'The name of the cache folder'|t('presto'),
+            id: 'cachePath',
+            name: 'cachePath',
+            value: settings.cachePath,
+            required: true,
+            placeholder: '/cache',
+        }) }}
+
+        {#TODO: When Craft 3.1 is released#}
+        {#{{ forms.autosuggestField({#}
+            {#label: 'Root Path'|t('presto'),#}
+            {#instructions: 'The path to your document root'|t('presto'),#}
+            {#id: 'rootPath',#}
+            {#name: 'rootPath',#}
+            {#value: settings.rootPath,#}
+            {#suggestions: craft.cp.getEnvSuggestions(true),#}
+            {#required: true,#}
+            {#placeholder: '/path/to/folder',#}
+        {#}) }}#}
+
+        {#{{ forms.autosuggestField({#}
+            {#label: 'Cache Path'|t('presto'),#}
+            {#instructions: 'The name of the cache folder'|t('presto'),#}
+            {#id: 'cachePath',#}
+            {#name: 'cachePath',#}
+            {#value: settings.cachePath,#}
+            {#suggestions: craft.cp.getEnvSuggestions(true),#}
+            {#required: true,#}
+            {#placeholder: '/cache',#}
+        {#}) }}#}
+
+        {{ forms.lightswitchField({
+            label: 'Cache pages for logged in users'|t('presto'),
+            id: 'cacheWhenLoggedIn',
+            name: 'cacheWhenLoggedIn',
+            on: settings.cacheWhenLoggedIn,
+            errors: settings.getErrors('cacheWhenLoggedIn'),
+        }) }}
+
+    {% endnamespace %}
+
+    <hr>
+
+    <div class="field">
+        <div class="heading">
+            <div class="instructions">
+                Purges all static and template caches.
+            </div>
+        </div>
+        <a class="btn submit" href="{{ actionUrl('presto/default/purge-cache') }}">Purge Cache</a>
+    </div>
+
+{% endblock %}
+
+
