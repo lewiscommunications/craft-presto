@@ -3,11 +3,11 @@
 namespace lewiscom\presto;
 
 use Craft;
-use craft\helpers\UrlHelper;
 use yii\base\Event;
 use craft\base\Plugin;
 use craft\web\UrlManager;
 use craft\services\Elements;
+use craft\helpers\UrlHelper;
 use craft\services\Dashboard;
 use craft\services\Structures;
 use lewiscom\presto\models\Settings;
@@ -18,6 +18,7 @@ use craft\web\twig\variables\CraftVariable;
 use lewiscom\presto\services\CrawlerService;
 use lewiscom\presto\variables\PrestoVariable;
 use craft\events\RegisterComponentTypesEvent;
+use lewiscom\presto\services\CachedPagesService;
 use lewiscom\presto\services\EventHandlerService;
 use craft\console\Application as ConsoleApplication;
 
@@ -28,17 +29,41 @@ use craft\console\Application as ConsoleApplication;
  * @property CacheService $cacheService
  * @property EventHandlerService $eventHandlerService
  * @property CrawlerService $crawlerService
+ * @property CachePagesService $cachePagesService
  * @property Settings $settings
  * @method Settings getSettings()
  */
 class Presto extends Plugin
 {
+    /**
+     * Is triggered before generating the static cache file
+     */
     const EVENT_BEFORE_GENERATE_CACHE_ITEM = 'beforeGenerateCacheItem';
+
+    /**
+     * Is triggered after generating the static cache file
+     */
     const EVENT_AFTER_GENERATE_CACHE_ITEM = 'afterGenerateCacheItem';
+
+    /**
+     * Is triggred before cache items are purged
+     */
     const EVENT_BEFORE_PURGE_CACHE = 'beforePurgeCache';
-    const AFTER_BEFORE_PURGE_CACHE = 'afterPurgeCache';
+
+    /**
+     * Is triggred after cache items are purged
+     */
+    const EVENT_AFTER_PURGE_CACHE = 'afterPurgeCache';
+
+    /**
+     * Is triggred before the entire cache is purged
+     */
     const EVENT_BEFORE_PURGE_CACHE_ALL = 'beforePurgeCacheAll';
-    const AFTER_BEFORE_PURGE_CACHE_ALL = 'afterPurgeCacheAll';
+
+    /**
+     * Is triggred after the entire cache is purged
+     */
+    const EVENT_AFTER_PURGE_CACHE_ALL = 'afterPurgeCacheAll';
 
     /**
      * Static property that is an instance of this plugin class so that it can
@@ -75,6 +100,7 @@ class Presto extends Plugin
             'cacheService' => CacheService::class,
             'eventHandlerService' => EventHandlerService::class,
             'crawlerService' => CrawlerService::class,
+            'cachedPagesService' => CachedPagesService::class,
         ]);
 
         // Register everything
@@ -112,21 +138,6 @@ class Presto extends Plugin
             UrlHelper::cpUrl('presto/settings/general')
         );
     }
-
-    ///**
-    // * @return string
-    // * @throws \Twig_Error_Loader
-    // * @throws \yii\base\Exception
-    // */
-    //protected function settingsHtml(): string
-    //{
-    //    return Craft::$app->view->renderTemplate(
-    //        'presto/settings',
-    //        [
-    //            'settings' => $this->getSettings()
-    //        ]
-    //    );
-    //}
 
     /**
      * Register events
@@ -166,6 +177,15 @@ class Presto extends Plugin
             Structures::class,
             Structures::EVENT_BEFORE_MOVE_ELEMENT,
             [$this->eventHandlerService, 'handleBeforeMoveElementEvent']
+        );
+
+        Event::on(
+            self::class,
+            self::EVENT_AFTER_GENERATE_CACHE_ITEM,
+            [
+                $this->eventHandlerService,
+                'handleAfterGenerateCacheItemEvent',
+            ]
         );
     }
 

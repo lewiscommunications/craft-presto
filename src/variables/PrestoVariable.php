@@ -50,11 +50,12 @@ class PrestoVariable
     public function __construct()
     {
         $plugin = Presto::$plugin;
+        $request = Craft::$app->request;
 
-        $this->host = Craft::$app->request->getServerName();
-        $this->baseUrl = Craft::$app->request->getBaseUrl();
+        $this->host = $request->getServerName();
+        $this->baseUrl = $request->getBaseUrl();
         $this->path = (! empty($this->baseUrl) ? ltrim($this->baseUrl, '/') . '/' : '')
-            . Craft::$app->request->getFullPath();
+            . $request->getFullPath();
         $this->cacheService = $plugin->cacheService;
         $this->settings = $plugin->getSettings();
     }
@@ -72,16 +73,19 @@ class PrestoVariable
     {
         $this->config = $config;
 
+        // The hostname and url path segments
         $keySegments = [
             'host' => $this->host,
             'path' => $this->path,
         ];
 
+        // Is this part of a group?
         if (isset($config['group']) && $config['group']) {
             $keySegments['group'] = $config['group'];
         }
 
-        $this->key = $this->generateKey($keySegments);
+        // Generate the cache key based on the key segments
+        $this->key = $this->cacheService->generateKey($keySegments);
 
         Event::on(
             Application::class,
@@ -100,10 +104,7 @@ class PrestoVariable
      */
     public function handleAfterRequestEvent()
     {
-        if (
-            (! isset($this->config['static']) || $this->config['static'] !== false) &&
-            $this->cacheService->isCacheable()
-        ) {
+        if ($this->cacheService->isCacheable()) {
             if ($html = Craft::$app->templateCaches->getTemplateCache($this->key, true)) {
                 $this->cacheService->write([
                     'host' => $this->host,
@@ -114,24 +115,5 @@ class PrestoVariable
                 ]);
             }
         }
-    }
-
-    /**
-     * Generate cacheKey based on the host and path
-     *
-     * @param array $keySegments [
-     *		@var string $host
-     *		@var string $path
-     * 		@var string $group (optional)
-     * ]
-     * @return string
-     */
-    private function generateKey($keySegments)
-    {
-        $group = isset($keySegments['group']) ? $keySegments['group'] . '/' : '';
-        $path = $keySegments['path'] ? $keySegments['path'] : 'home';
-        $key = $keySegments['host'] . '|' . $group . $path;
-
-        return preg_replace('/\s+/', '', $key);
     }
 }

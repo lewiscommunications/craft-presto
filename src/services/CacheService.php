@@ -3,15 +3,16 @@
 namespace lewiscom\presto\services;
 
 use Craft;
-use lewiscom\presto\events\CacheEvent;
 use RegexIterator;
 use craft\db\Query;
+use yii\base\Event;
 use craft\base\Component;
 use lewiscom\presto\Presto;
 use craft\helpers\FileHelper;
 use RecursiveIteratorIterator;
 use RecursiveDirectoryIterator;
-use yii\base\Event;
+use lewiscom\presto\events\PurgeEvent;
+use lewiscom\presto\events\CacheEvent;
 
 class CacheService extends Component
 {
@@ -68,7 +69,7 @@ class CacheService extends Component
             Craft::$app->templateCaches->deleteCachesByKey($caches);
 
             if ($immediate) {
-                $this->purgeCache();
+                $this->purgeCache($keys);
             } else {
                 // TODO
                 //$this->storePurgeEvent(
@@ -108,7 +109,10 @@ class CacheService extends Component
                     FileHelper::unlink($targetFile);
                 }
 
-                if (file_exists($targetPath)) {
+                // TODO: When deleting a single cache key that is an index of other entries,
+                // we need to check if that directory contains other directories or the entire
+                // section cache will be deleted.  Alternative methods may be desired.
+                if (file_exists($targetPath) && ! count(FileHelper::findDirectories($targetPath))) {
                     FileHelper::removeDirectory($targetPath);
                 }
             }
@@ -272,11 +276,12 @@ class CacheService extends Component
 
             $targetFile = $targetPath . DIRECTORY_SEPARATOR . 'index.' . $extension;
 
+            // TODO: Check if writeable `is_writable($dir)`
             FileHelper::writeToFile($targetFile, $this->cleanHtml($html));
 
             Event::trigger(
                 Presto::class,
-                Presto::EVENT_BEFORE_GENERATE_CACHE_ITEM,
+                Presto::EVENT_AFTER_GENERATE_CACHE_ITEM,
                 new CacheEvent([
                     'html' => $html,
                     'cacheKey' => $cacheKey,

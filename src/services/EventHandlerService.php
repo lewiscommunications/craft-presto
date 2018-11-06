@@ -5,11 +5,13 @@ namespace lewiscom\presto\services;
 use Craft;
 use craft\base\Component;
 use craft\elements\Entry;
+use lewiscom\presto\events\CacheEvent;
 use lewiscom\presto\Presto;
 use craft\events\ElementEvent;
 use craft\events\MoveElementEvent;
 use craft\events\ElementActionEvent;
 use lewiscom\presto\jobs\WarmCacheTask;
+use lewiscom\presto\records\PrestoCacheRecord;
 
 class EventHandlerService extends Component
 {
@@ -118,5 +120,22 @@ class EventHandlerService extends Component
         ]);
 
         $this->cacheService->triggerPurge();
+    }
+
+    /**
+     * Save the cache record to the database
+     *
+     * @param CacheEvent $event
+     * @throws \craft\errors\SiteNotFoundException
+     */
+    public function handleAfterGenerateCacheItemEvent(CacheEvent $event)
+    {
+        $record = new PrestoCacheRecord();
+        $record->siteId = Craft::$app->sites->getCurrentSite()->id;
+        $record->cacheKey = $event->cacheKey;
+        $record->filePath = $event->filePath;
+        $record->group = $event->config['group'] ?? null;
+        $record->url = implode('/', [$event->host, $event->path]);
+        $record->save();
     }
 }

@@ -1,7 +1,60 @@
 {% extends 'presto/_layouts/master' %}
+{% import '_includes/forms' as forms %}
+
+{% set headers = [
+    'Site ID',
+    'Url',
+    'Group',
+    'Created'
+] %}
 
 {% block content %}
-    cached pages
+    <form method="POST">
+        <input type="hidden" name="action" value="presto/cached-pages/purge-selected">
+        <input type="hidden" name="pluginHandle" value="presto">
+
+        {{ redirectInput('presto/cachedPages') }}
+        {{ csrfInput() }}
+
+        <div class="buttons">
+            <input type="submit" class="btn submit" value="Purge Selected">
+        </div>
+        <div class="tableview">
+            <table class="data fullwidth">
+                <thead>
+                <tr>
+                    <td class="checkbox-cell"></td>
+                    {% for header in headers %}
+                        <th scope="col">{{ header }}</th>
+                    {% endfor %}
+                    <th scope="col" data-attribute="link" data-icon="world" title="Link"></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for page in cachedPages %}
+                    <tr data-id="{{ page.id }}">
+                        <td class="checkbox-cell">
+                            {{ forms.checkboxField({
+                                id: 'page-' ~ page.id,
+                                name: 'cacheKeys[]',
+                                value: page.cacheKey,
+                                checked: false,
+                            }) }}
+                        </td>
+                        <td data-title="" data-attr="section">{{ page.siteId }}</td>
+                        <td data-title="" data-attr="">{{ page.url }}</td>
+                        <td data-title="" data-attr="">{{ page.group }}</td>
+                        <td data-title="" data-attr="">{{ page.dateCreated }}</td>
+                        <td data-title="Link" data-attr="link">
+                            <a href="https://{{ page.url }}" rel="noopener" target="_blank" data-icon="world" title="Visit webpage"></a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+    {% include 'presto/_includes/pagination' with { paginate: paginate } %}
 {% endblock %}
 
 

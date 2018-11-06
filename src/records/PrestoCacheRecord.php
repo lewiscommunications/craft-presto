@@ -23,9 +23,10 @@ class PrestoCacheRecord extends ActiveRecord
     public function rules()
     {
         return [
-            [['url'], 'required'],
-            [['type'], 'string'],
+            [['url', 'cacheKey'], 'required'],
+            [['cacheKey'], 'string'],
             [['url'], 'string'],
+            [['filePath'], 'string'],
         ];
     }
 }

@@ -1,0 +1,47 @@
+<nav class="pagination" aria-label="Pagination">
+    <div class="pagination__page">
+        {% if paginate.prevUrl %}
+            <a
+                href="{{ paginate.prevUrl }}"
+                rel="prev"
+                class="pagination__link -prev"
+            >
+                <span class="reader">Previous</span>
+            </a>
+        {% else %}
+            <span class="pagination__link -prev -disabled"></span>
+        {% endif %}
+    </div>
+
+    <ol class="pagination__pages">
+        {% for page, url in paginate.getPrevUrls(3) %}
+            <li class="pagination__page">
+                <a href="{{ url }}" class="pagination__link">{{ page }}</a>
+            </li>
+        {% endfor %}
+
+        <li class="pagination__page">
+            <span class="pagination__link -current">{{ paginate.currentPage }}</span>
+        </li>
+
+        {% for page, url in paginate.getNextUrls(3) %}
+            <li class="pagination__page">
+                <a href="{{ url }}" class="pagination__link">{{ page }}</a>
+            </li>
+        {% endfor %}
+    </ol>
+
+    <div class="pagination__page">
+        {% if paginate.nextUrl %}
+            <a
+                href="{{ paginate.nextUrl }}"
+                rel="next"
+                class="pagination__page -next"
+            >
+                <span class="reader">Next</span>
+            </a>
+        {% else %}
+            <span class="pagination__page -next -disabled"></span>
+        {% endif %}
+    </div>
+</nav>

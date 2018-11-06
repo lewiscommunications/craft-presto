@@ -2,6 +2,8 @@
 
 {% set title = 'Presto'|t('presto') %}
 
+{% do view.registerAssetBundle('lewiscom\\presto\\assetbundles\\presto\\PrestoAsset') %}
+
 {% set nav = {
     general: { heading: 'General'|t('presto') },
     cachedPages: { title: 'Cached Pages'|t('presto') },

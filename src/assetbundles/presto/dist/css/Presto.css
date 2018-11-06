@@ -1,0 +1,15 @@
+.pagination {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+ol.pagination__pages {
+    display: flex;
+    list-style-type: none;
+    padding-left: 0 !important;
+}
+
+.pagination__page {
+    padding: 15px;
+}

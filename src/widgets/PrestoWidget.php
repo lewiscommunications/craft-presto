@@ -9,6 +9,8 @@ use lewiscom\presto\assetbundles\widget\WidgetAsset;
 
 class PrestoWidget extends Widget
 {
+    public $message;
+
     /**
      * Returns the display name of this class.
      *
@@ -37,24 +39,6 @@ class PrestoWidget extends Widget
     public static function maxColspan()
     {
         return 1;
-    }
-
-    /**
-     * Returns the validation rules for attributes.
-     *
-     * @return array
-     */
-    public function rules()
-    {
-        $rules = parent::rules();
-        $rules = array_merge(
-            $rules,
-            [
-                ['message', 'string'],
-                ['message', 'default', 'value' => 'Hello, world.'],
-            ]
-        );
-        return $rules;
     }
 
     /**

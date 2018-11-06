@@ -40,4 +40,11 @@ class CacheEvent extends Event
      * @var string
      */
     public $path = '';
+
+    /**
+     * The configuration for the cached item
+     *
+     * @var array
+     */
+    public $config = [];
 }

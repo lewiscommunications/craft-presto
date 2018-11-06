@@ -66,16 +66,24 @@ class Install extends Migration
     {
         $tablesCreated = false;
 
-        $tableSchema = Craft::$app->db->schema->getTableSchema($this->cacheRecordTableName);
+        $cacheRecordTableSchema = Craft::$app->db->schema
+            ->getTableSchema($this->cacheRecordTableName);
+        $purgeRecordtableSchema = Craft::$app->db->schema
+            ->getTableSchema($this->purgeRecordTableName);
 
-        if ($tableSchema === null) {
+        if (
+            $cacheRecordTableSchema === null &&
+            $purgeRecordtableSchema === null
+        ) {
             $tablesCreated = true;
+
             $this->createTable(
                 $this->cacheRecordTableName,
                 [
                     'id' => $this->primaryKey(),
                     'siteId' => $this->integer()->notNull(),
-                    'cacheId' => $this->integer()->notNull(),
+                    'cacheKey' => $this->string()->notNull(),
+                    'filePath' => $this->string()->notNull(),
                     'url' => $this->string()->notNull(),
                     'group' => $this->string(),
                     'dateCreated' => $this->dateTime()->notNull(),
@@ -154,9 +162,9 @@ class Install extends Migration
         $this->addForeignKey(
             $this->db->getForeignKeyName($this->cacheRecordTableName, 'cacheId'),
             $this->cacheRecordTableName,
-            'cacheId',
+            'cacheKey',
             '{{%templatecaches}}',
-            'id',
+            'cacheKey',
             'CASCADE',
             'CASCADE'
         );
@@ -180,7 +188,7 @@ class Install extends Migration
      */
     protected function removeTables()
     {
-        $this->dropTableIfExists($this->cacheRecordTableName);
-        $this->dropTableIfExists($this->purgeRecordTableName);
+        $this->dropTableIfExists(PrestoPurgeRecord::tableName());
+        $this->dropTableIfExists(PrestoCacheRecord::tableName());
     }
 }
