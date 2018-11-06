@@ -2,6 +2,7 @@
 
 namespace lewiscom\presto\services;
 
+use function array_reverse;
 use Craft;
 use craft\db\Query;
 use craft\base\Component;
@@ -38,9 +39,65 @@ class CachedPagesService extends Component
 
         $totalPages = (int) ceil( $count / $pageSize);
 
+        foreach ($items as &$item) {
+            $item['age'] = $this->getTimeDiff(
+                $item['dateCreated'],
+                false,
+                2,
+                false);
+        }
+
         return [
             'items' => $items,
             'paginator' => new Paginator($page, $totalPages),
         ];
+    }
+
+    /**
+     * Calculates the difference between two dates and returns the relative
+     * time in a human readable format
+     *
+     * @param $from
+     * @param bool $to
+     * @param int $precision
+     * @param string $suffix
+     * @return string
+     */
+    private function getTimeDiff($from, $to = false, $precision = 2, $suffix = 'ago')
+    {
+        if (! $to) {
+            $to = new \DateTime(gmdate('Y-m-d H:i:s'));
+        }
+
+        $diff = (new \DateTime($from))->diff($to);
+        $parts = [];
+
+        $map = [
+            'y' => 'year',
+            'm' => 'month',
+            'd' => 'day',
+            'h' => 'hour',
+            'i' => 'minute',
+            's' => 'second',
+        ];
+
+        foreach ($diff as $key => $value) {
+            if (isset($map[$key]) && $value) {
+                $parts[] = $value . ' ' . $map[$key] . ($value > 1 ? 's' : '');
+            }
+        }
+
+        if (count($parts) < $precision) {
+            $precision = 0;
+        } else {
+            $precision = count($parts) - $precision;
+        }
+
+        $reversed = array_reverse($parts);
+
+        return implode(
+            ', ',
+            array_reverse(array_slice($reversed, $precision))
+        ) . ($suffix ? ' ' . $suffix : '');
     }
 }
