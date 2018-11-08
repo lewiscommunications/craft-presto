@@ -57,20 +57,23 @@ class EventHandlerService extends Component
      */
     public function handleBeforeSaveElementEvent(ElementEvent $event)
     {
-        if (! $event->isNew && ! $this->cacheService->caches) {
-            $this->cacheService->setCaches([
-                $event->element->id
-            ]);
-        } else if ($event->isNew && ! $this->cacheService->caches) {
-            $entries = Entry::find()->where([
-                'sectionId' => $event->element->sectionId
-            ])->all();
+        // Check if element is an entry before proceeding
+        if ($event->element instanceof Entry) {
+            if (! $event->isNew && ! $this->cacheService->caches) {
+                $this->cacheService->setCaches([
+                    $event->element->id
+                ]);
+            } else if ($event->isNew && ! $this->cacheService->caches) {
+                $entries = Entry::find()->where([
+                    'sectionId' => $event->element->sectionId
+                ])->all();
 
-            $caches = array_map(function($entry) {
-                return $entry->id;
-            }, $entries);
+                $caches = array_map(function($entry) {
+                    return $entry->id;
+                }, $entries);
 
-            $this->cacheService->setCaches($caches);
+                $this->cacheService->setCaches($caches);
+            }
         }
     }
 
