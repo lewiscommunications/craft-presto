@@ -138,6 +138,8 @@ class PrestoService extends Component
     {
         $cachePath = $this->rootPath . $this->settings->cachePath;
 
+        Craft::$app->templateCaches->deleteAllCaches();
+
         if (file_exists($cachePath)) {
             FileHelper::clearDirectory($cachePath);
         }

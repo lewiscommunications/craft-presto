@@ -263,8 +263,6 @@ class Presto extends Plugin
         $immediate = $this->getSettings()->purgeMethod === 'immediate';
 
         if ($all) {
-            Craft::$app->templateCaches->deleteAllCaches();
-
             if ($immediate) {
                 $this->prestoService->purgeEntireCache();
             } else {
