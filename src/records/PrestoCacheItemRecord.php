@@ -6,7 +6,7 @@ use Craft;
 use craft\db\ActiveRecord;
 use lewiscom\presto\Presto;
 
-class PrestoCacheRecord extends ActiveRecord
+class PrestoCacheItemRecord extends ActiveRecord
 {
 
     /**
@@ -14,7 +14,7 @@ class PrestoCacheRecord extends ActiveRecord
      */
     public static function tableName()
     {
-        return '{{%presto_cache_record}}';
+        return '{{%presto_cache_item_record}}';
     }
 
     /**
@@ -24,9 +24,7 @@ class PrestoCacheRecord extends ActiveRecord
     {
         return [
             [['url', 'cacheKey'], 'required'],
-            [['cacheKey'], 'string'],
-            [['url'], 'string'],
-            [['filePath'], 'string'],
+            [['cacheKey', 'url', 'cacheGroup', 'filePath'], 'string'],
         ];
     }
 }

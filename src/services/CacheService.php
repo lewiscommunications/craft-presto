@@ -111,7 +111,7 @@ class CacheService extends Component
 
                 // TODO: When deleting a single cache key that is an index of other entries,
                 // we need to check if that directory contains other directories or the entire
-                // section cache will be deleted.  Alternative methods may be desired.
+                // section cache will be deleted.  Alternate method may be desired.
                 if (file_exists($targetPath) && ! count(FileHelper::findDirectories($targetPath))) {
                     FileHelper::removeDirectory($targetPath);
                 }

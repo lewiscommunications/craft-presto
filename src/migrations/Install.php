@@ -6,7 +6,7 @@ use Craft;
 use craft\db\Migration;
 use craft\config\DbConfig;
 use lewiscom\presto\Presto;
-use lewiscom\presto\records\PrestoCacheRecord;
+use lewiscom\presto\records\PrestoCacheItemRecord;
 use lewiscom\presto\records\PrestoPurgeRecord;
 
 class Install extends Migration
@@ -31,7 +31,7 @@ class Install extends Migration
      */
     public function safeUp()
     {
-        $this->cacheRecordTableName = PrestoCacheRecord::tableName();
+        $this->cacheRecordTableName = PrestoCacheItemRecord::tableName();
         $this->purgeRecordTableName = PrestoPurgeRecord::tableName();
 
         $this->driver = Craft::$app->getConfig()->getDb()->driver;
@@ -85,7 +85,7 @@ class Install extends Migration
                     'cacheKey' => $this->string()->notNull(),
                     'filePath' => $this->string()->notNull(),
                     'url' => $this->string()->notNull(),
-                    'group' => $this->string(),
+                    'cacheGroup' => $this->string(),
                     'dateCreated' => $this->dateTime()->notNull(),
                     'dateUpdated' => $this->dateTime()->notNull(),
                     'uid' => $this->uid(),
@@ -99,7 +99,7 @@ class Install extends Migration
                     'siteId' => $this->integer()->notNull(),
                     'purgedAt' => $this->dateTime()->notNull(),
                     'paths' => $this->text()->notNull(),
-                    'group' => $this->string(),
+                    'cacheGroup' => $this->string(),
                     'dateCreated' => $this->dateTime()->notNull(),
                     'dateUpdated' => $this->dateTime()->notNull(),
                     'uid' => $this->uid(),
@@ -179,6 +179,17 @@ class Install extends Migration
             'CASCADE',
             'CASCADE'
         );
+
+        // Add siteId foreign key to purge record table
+        $this->addForeignKey(
+            $this->db->getForeignKeyName($this->purgeRecordTableName, 'id'),
+            $this->purgeRecordTableName,
+            'id',
+            '{{%elements}}',
+            'id',
+            'CASCADE',
+            null
+        );
     }
 
     /**
@@ -189,6 +200,6 @@ class Install extends Migration
     protected function removeTables()
     {
         $this->dropTableIfExists(PrestoPurgeRecord::tableName());
-        $this->dropTableIfExists(PrestoCacheRecord::tableName());
+        $this->dropTableIfExists(PrestoCacheItemRecord::tableName());
     }
 }
