@@ -81,6 +81,11 @@ class Presto extends Plugin
      */
     public $schemaVersion = '1.0.0';
 
+    public static function t(string $message = '', array $params = []): string
+    {
+        return Craft::t('presto', $message, $params);
+    }
+
     /**
      * Initialize plugin
      */
@@ -110,8 +115,7 @@ class Presto extends Plugin
         $this->registerWidgets();
 
         Craft::info(
-            Craft::t(
-                'presto',
+            self::t(
                 '{name} plugin loaded',
                 ['name' => $this->name]
             ),
@@ -215,7 +219,7 @@ class Presto extends Plugin
             function (RegisterUrlRulesEvent $event) {
                 $event->rules['presto/settings/general'] = 'presto/general-settings';
                 $event->rules['presto/settings/cache-warming'] = 'presto/cache-warming-settings';
-                $event->rules['presto/cachedPages'] = 'presto/cached-pages';
+                $event->rules['presto/cache'] = 'presto/cached-pages';
             }
         );
     }

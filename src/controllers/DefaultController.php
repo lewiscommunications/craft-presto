@@ -64,7 +64,7 @@ class DefaultController extends Controller
         }
 
         Craft::$app->session->setNotice(
-            Craft::t('presto', $cron ? 'Cache purge scheduled.' : 'Cache purged.')
+            Presto::t($cron ? 'Cache purge scheduled.' : 'Cache purged.')
         );
 
         return $this->redirectBack();
@@ -80,7 +80,7 @@ class DefaultController extends Controller
         );
 
         Craft::$app->session->setNotice(
-            Craft::t('presto', 'Cache warming has started')
+            Presto::t('Cache warming has started')
         );
 
         return $this->redirectBack();

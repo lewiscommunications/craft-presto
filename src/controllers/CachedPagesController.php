@@ -16,8 +16,8 @@ class CachedPagesController extends Controller
             ->cachedPagesService
             ->getCachedPages($page);
 
-        return $this->renderTemplate('presto/cachedPages', [
-            'cachedPages' => $cachedPages['items'],
+        return $this->renderTemplate('presto/cache', [
+            'cache' => $cachedPages['items'],
             'paginate' => $cachedPages['paginator'],
         ]);
     }
@@ -40,6 +40,6 @@ class CachedPagesController extends Controller
 
         Presto::$plugin->cacheService->triggerPurge(false, $keys);
 
-        return $this->redirect(UrlHelper::cpUrl('presto/cachedPages'));
+        return $this->redirect(UrlHelper::cpUrl('presto/cache'));
     }
 }

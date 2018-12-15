@@ -18,7 +18,7 @@ class PrestoWidget extends Widget
      */
     public static function displayName(): string
     {
-        return Craft::t('presto', 'Presto');
+        return Presto::t('Presto');
     }
 
     /**

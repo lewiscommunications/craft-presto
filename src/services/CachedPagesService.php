@@ -11,7 +11,7 @@ use lewiscom\presto\utils\Paginator;
 
 class CachedPagesService extends Component
 {
-    public $table = '{{%presto_cache_record}}';
+    public $table = '{{%presto_cache_item_record}}';
 
     public function getCachedPages($page)
     {

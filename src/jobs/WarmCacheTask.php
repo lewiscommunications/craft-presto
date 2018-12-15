@@ -7,6 +7,7 @@ use GuzzleHttp\Pool;
 use GuzzleHttp\Client;
 use craft\queue\BaseJob;
 use GuzzleHttp\Psr7\Request;
+use lewiscom\presto\Presto;
 use lewiscom\presto\utils\Logger;
 
 class WarmCacheTask extends BaseJob
@@ -67,6 +68,6 @@ class WarmCacheTask extends BaseJob
      */
     protected function defaultDescription(): string
     {
-        return Craft::t('presto', 'Warming Cache');
+        return Presto::t('Warming Cache');
     }
 }
