@@ -13,3 +13,11 @@ ol.pagination__pages {
 .pagination__page {
     padding: 15px;
 }
+
+.btn.submit {
+    margin-right: 15px;
+}
+
+.flex-grow.search {
+    margin-right: 15px;
+}

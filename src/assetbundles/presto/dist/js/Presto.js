@@ -43,15 +43,52 @@ var Presto;
 
 (function(P, $) {
     P = (function() {
+        function parseQuery(queryString) {
+            var obj = {};
+
+            if (queryString.length) {
+                var pairs = queryString.split('&');
+                for(i in pairs){
+                    var split = pairs[i].split('=');
+                    obj[decodeURIComponent(split[0])] = decodeURIComponent(split[1]);
+                }
+            }
+
+            return obj;
+        }
+
         return {
             $form: $('.js-presto-purge-selected'),
             $checkboxes: $('.js-presto-cache-key-checkbox'),
             $checkAllCheckbox: $('.js-presto-cache-key-checkbox-all'),
             $submitButton: $('.js-presto-purge-submit'),
-        }
+            $searchInput: $('.js-presto-search-input'),
+            $searchSubmit: $('.js-presto-search-submit'),
+            init: function() {
+                this.bindEvents();
+            },
+
+            bindEvents: function() {
+                var scope = this;
+
+                this.$searchInput.on('keyup', function(e) {
+                    if (e.keyCode === 13) {
+                        scope.search();
+                    }
+                });
+            },
+
+            search: function() {
+                var query = parseQuery(window.location.search);
+
+                query.query = this.$searchInput.val();
+
+                window.location = window.location.origin + window.location.pathname + '?' + $.param(query);
+            },
+        };
     })();
 
     Presto = P;
 })(Presto, window.jQuery);
 
-console.log(Presto);
+Presto.init();
