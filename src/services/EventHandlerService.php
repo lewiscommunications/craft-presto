@@ -102,7 +102,7 @@ class EventHandlerService extends Component
             $this->cacheService->setCaches($event->criteria->ids());
 
             if ($this->cacheService->hasCaches()) {
-                $this->cacheService->triggerPurge(false, $caches);
+                $this->cacheService->triggerPurge(false, $this->cacheService->caches);
             } else {
                 $this->cacheService->triggerPurge(true);
             }
