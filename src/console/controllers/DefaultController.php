@@ -10,6 +10,17 @@ use lewiscom\presto\Presto;
 
 class DefaultController extends Controller
 {
-    // TODO: Warm cache from console
     // TODO: Add cron
+
+    public function actionClearCache()
+    {
+        Presto::$plugin->cacheService->triggerPurge(true);
+    }
+
+    public function actionWarmCache()
+    {
+        Presto::$plugin->crawlerService->crawl(
+            Craft::getAlias(Presto::$plugin->getSettings()->sitemapIndex, false)
+        );
+    }
 }
