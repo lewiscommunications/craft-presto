@@ -3,9 +3,9 @@
 namespace lewiscom\presto\variables;
 
 use Craft;
+use yii\base\Event;
 use craft\web\Application;
 use lewiscom\presto\Presto;
-use yii\base\Event;
 
 class PrestoVariable
 {
@@ -73,18 +73,15 @@ class PrestoVariable
     {
         $this->config = $config;
 
-        // The hostname and url path segments
         $keySegments = [
             'host' => $this->host,
             'path' => $this->path,
         ];
 
-        // Is this part of a group?
         if (isset($config['group']) && $config['group']) {
             $keySegments['group'] = $config['group'];
         }
 
-        // Generate the cache key based on the key segments
         $this->key = $this->cacheService->generateKey($keySegments);
 
         Event::on(
@@ -104,15 +101,14 @@ class PrestoVariable
      */
     public function handleAfterRequestEvent()
     {
-        if ($this->cacheService->isCacheable()) {
-            if ($html = Craft::$app->templateCaches->getTemplateCache($this->key, true)) {
-                $this->cacheService->write([
-                    'host' => $this->host,
-                    'path' => $this->path,
-                    'html' => $html,
-                    'config' => $this->config ?? [],
-                    'cacheKey' => $this->key
-                ]);
+        if ($this->cacheService->isCacheable($this->config)) {
+            if ($html = Craft::$app->response->data) {
+                $this->cacheService->write(
+                    $this->host,
+                    $this->path,
+                    $html,
+                    $this->config
+                );
             }
         }
     }

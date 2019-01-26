@@ -59,6 +59,7 @@ class EventHandlerService extends Component
      */
     public function handleBeforeSaveElementEvent(ElementEvent $event)
     {
+        // Check if element is an entry before proceeding
         if ($event->element instanceof Entry) {
             if (! $event->isNew && ! $this->cacheService->caches) {
                 $this->cacheService->setCaches([
@@ -103,7 +104,7 @@ class EventHandlerService extends Component
             $this->cacheService->setCaches($event->criteria->ids());
 
             if ($this->cacheService->hasCaches()) {
-                $this->cacheService->triggerPurge(false, $caches);
+                $this->cacheService->triggerPurge(false, $this->cacheService->caches);
             } else {
                 $this->cacheService->triggerPurge(true);
             }
