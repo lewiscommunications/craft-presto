@@ -13,7 +13,12 @@ class CachedPagesService extends Component
 {
     public $table = '{{%presto_cache_item_record}}';
 
-    public function getCachedPages($page)
+    /**
+     * @param $page
+     * @param $search
+     * @return array
+     */
+    public function getCachedPages($page, $search)
     {
         $pageSize = 5;
         $offset = $page > 1 ? ($page - 1) * $pageSize : 0;
@@ -26,6 +31,10 @@ class CachedPagesService extends Component
                 '{{%templatecaches}} as caches',
                 'caches.cacheKey = cachedPages.cacheKey'
             );
+
+        if ($search) {
+            $query->where(['like', 'cachedPages.cacheKey', $search]);
+        }
 
         $countQuery = clone $query;
         $count = $countQuery->count();

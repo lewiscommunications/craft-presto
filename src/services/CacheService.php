@@ -228,12 +228,13 @@ class CacheService extends Component
     public function write($options = [])
     {
         [
-            'host' => $host,
-            'path' => $path,
-            'html' => $html,
-            'config' => $config,
-            'cacheKey' => $cacheKey
+            $host,
+            $path,
+            $config,
+            $cacheKey
         ] = $options;
+
+        $html = Craft::$app->response->data;
 
         $isGuest = Craft::$app->user->isGuest;
 
@@ -277,7 +278,7 @@ class CacheService extends Component
             $targetFile = $targetPath . DIRECTORY_SEPARATOR . 'index.' . $extension;
 
             // TODO: Check if writeable `is_writable($dir)`
-            FileHelper::writeToFile($targetFile, $this->cleanHtml($html));
+            FileHelper::writeToFile($targetFile, $this->cleanHtml(Craft::$app->response->data));
 
             Event::trigger(
                 Presto::class,

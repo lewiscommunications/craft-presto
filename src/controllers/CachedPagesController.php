@@ -12,13 +12,15 @@ class CachedPagesController extends Controller
     public function actionIndex()
     {
         $page = Craft::$app->request->getQueryParam('page', 1);
+        $search = Craft::$app->request->getQueryParam('query', false);
         $cachedPages = Presto::$plugin
             ->cachedPagesService
-            ->getCachedPages($page);
+            ->getCachedPages($page, $search);
 
         return $this->renderTemplate('presto/cache', [
             'cache' => $cachedPages['items'],
             'paginate' => $cachedPages['paginator'],
+            'search' => $search,
         ]);
     }
 

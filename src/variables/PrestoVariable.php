@@ -102,13 +102,13 @@ class PrestoVariable
     public function handleAfterRequestEvent()
     {
         if ($this->cacheService->isCacheable($this->config)) {
-            if ($html = Craft::$app->response->data) {
-                $this->cacheService->write(
+            if (Craft::$app->templateCaches->getTemplateCache($this->key, true)) {
+                $this->cacheService->write([
                     $this->host,
                     $this->path,
-                    $html,
-                    $this->config
-                );
+                    $this->config,
+                    $this->key,
+                ]);
             }
         }
     }

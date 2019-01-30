@@ -48,13 +48,27 @@ var Presto;
 
             if (queryString.length) {
                 var pairs = queryString.split('&');
-                for(i in pairs){
+                for (i in pairs) {
                     var split = pairs[i].split('=');
                     obj[decodeURIComponent(split[0])] = decodeURIComponent(split[1]);
                 }
             }
 
             return obj;
+        }
+
+        function validateCheckBoxes($checkboxes) {
+            for (var i = 0; i < $checkboxes.length; i += 1) {
+                if ($checkboxes[i].checked) {
+                    return true;
+                }
+            }
+        }
+
+        function operateAllCheckboxes($checkboxes, checked) {
+            $checkboxes.each(function() {
+                this.checked = checked || false;
+            });
         }
 
         return {
@@ -76,12 +90,27 @@ var Presto;
                         scope.search();
                     }
                 });
+
+                this.$form.on('change', function(e) {
+                    if (e.target.type === 'checkbox') {
+                        var valid = validateCheckBoxes(scope.$checkboxes);
+
+                        scope.$submitButton.attr('disabled', ! valid)
+                            [valid ? 'removeClass' : 'addClass']('disabled');
+                    }
+                });
+
+                this.$checkAllCheckbox.on('change', function(e) {
+                    operateAllCheckboxes(scope.$checkboxes, e.target.checked);
+                });
             },
 
             search: function() {
                 var query = parseQuery(window.location.search);
 
                 query.query = this.$searchInput.val();
+
+                console.log(query);
 
                 window.location = window.location.origin + window.location.pathname + '?' + $.param(query);
             },

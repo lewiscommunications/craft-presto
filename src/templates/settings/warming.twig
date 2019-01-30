@@ -12,26 +12,16 @@
 
     {% namespace 'settings' %}
 
-        {{ forms.textField({
+        {{ forms.autosuggestField({
             label: 'Sitemap Index'|t('presto'),
             instructions: 'The public path to your sitemap index'|t('presto'),
             id: 'sitemapIndex',
             name: 'sitemapIndex',
             value: settings.sitemapIndex,
+            suggestions: craft.cp.getEnvSuggestions(true),
             required: true,
             placeholder: '@cdnUrl/sitemaps/index.xml',
         }) }}
-
-        {#{{ forms.autosuggestField({#}
-            {#label: 'Sitemap Index'|t('presto'),#}
-            {#instructions: 'The public path to your sitemap index'|t('presto'),#}
-            {#id: 'sitemapIndex',#}
-            {#name: 'sitemapIndex',#}
-            {#value: settings.sitemapIndex,#}
-            {#suggestions: craft.cp.getEnvSuggestions(true),#}
-            {#required: true,#}
-            {#placeholder: '@cdnUrl/sitemaps/index.xml',#}
-        {#}) }}#}
 
         {{ forms.checkboxField({
             label: 'Enable cache warming'|t('presto'),

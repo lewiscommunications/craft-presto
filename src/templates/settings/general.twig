@@ -12,48 +12,27 @@
 
     {% namespace 'settings' %}
 
-        {{ forms.textField({
+        {{ forms.autosuggestField({
             label: 'Root Path'|t('presto'),
             instructions: 'The path to your document root'|t('presto'),
             id: 'rootPath',
             name: 'rootPath',
             value: settings.rootPath,
+            suggestions: craft.cp.getEnvSuggestions(true),
             required: true,
             placeholder: '/path/to/folder',
         }) }}
 
-        {{ forms.textField({
+        {{ forms.autosuggestField({
             label: 'Cache Path'|t('presto'),
             instructions: 'The name of the cache folder'|t('presto'),
             id: 'cachePath',
             name: 'cachePath',
             value: settings.cachePath,
+            suggestions: craft.cp.getEnvSuggestions(true),
             required: true,
             placeholder: '/cache',
         }) }}
-
-        {#TODO: When Craft 3.1 is released#}
-        {#{{ forms.autosuggestField({#}
-            {#label: 'Root Path'|t('presto'),#}
-            {#instructions: 'The path to your document root'|t('presto'),#}
-            {#id: 'rootPath',#}
-            {#name: 'rootPath',#}
-            {#value: settings.rootPath,#}
-            {#suggestions: craft.cp.getEnvSuggestions(true),#}
-            {#required: true,#}
-            {#placeholder: '/path/to/folder',#}
-        {#}) }}#}
-
-        {#{{ forms.autosuggestField({#}
-            {#label: 'Cache Path'|t('presto'),#}
-            {#instructions: 'The name of the cache folder'|t('presto'),#}
-            {#id: 'cachePath',#}
-            {#name: 'cachePath',#}
-            {#value: settings.cachePath,#}
-            {#suggestions: craft.cp.getEnvSuggestions(true),#}
-            {#required: true,#}
-            {#placeholder: '/cache',#}
-        {#}) }}#}
 
         {{ forms.lightswitchField({
             label: 'Cache pages for logged in users'|t('presto'),
