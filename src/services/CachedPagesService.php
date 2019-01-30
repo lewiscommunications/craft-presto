@@ -2,7 +2,6 @@
 
 namespace lewiscom\presto\services;
 
-use function array_reverse;
 use Craft;
 use craft\db\Query;
 use craft\base\Component;
@@ -20,7 +19,7 @@ class CachedPagesService extends Component
      */
     public function getCachedPages($page, $search)
     {
-        $pageSize = 5;
+        $pageSize = 15;
         $offset = $page > 1 ? ($page - 1) * $pageSize : 0;
 
         $query = (new Query())

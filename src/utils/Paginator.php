@@ -13,6 +13,7 @@ class Paginator
 
     public function __construct($page, $totalPages)
     {
+        $this->params = \Craft::$app->request->getQueryParams();
         $this->currentPage = (int) $page;
         $this->totalPages = (int) $totalPages;
         $this->nextPage = (int) $this->currentPage === $this->totalPages ? null : $this->currentPage + 1;
@@ -50,7 +51,11 @@ class Paginator
         }
 
         for ($page = $start; $page <= $end; $page++) {
-            $urls[$page] = '?page=' . $page;
+            $params = array_merge($this->params, [
+                'page' => $page
+            ]);
+
+            $urls[$page] = '?' . http_build_query($params);
         }
 
         return $urls;
