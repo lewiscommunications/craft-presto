@@ -4,6 +4,10 @@ namespace lewiscom\presto\migrations;
 
 use Craft;
 use craft\db\Migration;
+use craft\config\DbConfig;
+use lewiscom\presto\Presto;
+use lewiscom\presto\records\PrestoCacheItemRecord;
+use lewiscom\presto\records\PrestoPurgeRecord;
 
 class Install extends Migration
 {
@@ -13,23 +17,28 @@ class Install extends Migration
     public $driver;
 
     /**
-     * @var string The table name
+     * @var string
      */
-    private $tableName = '{{%presto_cachepurge}}';
+    public $cacheRecordTableName;
 
     /**
-     * Apply migration
-     *
+     * @var string
+     */
+    public $purgeRecordTableName;
+
+    /**
      * @return bool
      */
     public function safeUp()
     {
+        $this->cacheRecordTableName = PrestoCacheItemRecord::tableName();
+        $this->purgeRecordTableName = PrestoPurgeRecord::tableName();
+
         $this->driver = Craft::$app->getConfig()->getDb()->driver;
 
         if ($this->createTables()) {
             $this->createIndexes();
             $this->addForeignKeys();
-
             // Refresh the db schema caches
             Craft::$app->db->schema->refresh();
         }
@@ -38,7 +47,6 @@ class Install extends Migration
     }
 
     /**
-     * Undo migration
      * @return bool
      */
     public function safeDown()
@@ -58,23 +66,43 @@ class Install extends Migration
     {
         $tablesCreated = false;
 
-        $tableSchema = Craft::$app->db->schema->getTableSchema($this->tableName);
+        $cacheRecordTableSchema = Craft::$app->db->schema
+            ->getTableSchema($this->cacheRecordTableName);
+        $purgeRecordtableSchema = Craft::$app->db->schema
+            ->getTableSchema($this->purgeRecordTableName);
 
-        if ($tableSchema === null) {
+        if (
+            $cacheRecordTableSchema === null &&
+            $purgeRecordtableSchema === null
+        ) {
             $tablesCreated = true;
 
             $this->createTable(
-                $this->tableName,
+                $this->cacheRecordTableName,
                 [
                     'id' => $this->primaryKey(),
+                    'siteId' => $this->integer()->notNull(),
+                    'cacheKey' => $this->string()->notNull(),
+                    'filePath' => $this->string()->notNull(),
+                    'url' => $this->string()->notNull(),
+                    'cacheGroup' => $this->string(),
                     'dateCreated' => $this->dateTime()->notNull(),
                     'dateUpdated' => $this->dateTime()->notNull(),
                     'uid' => $this->uid(),
-                    'siteId' => $this->integer(),
+                ]
+            );
 
-                    // Custom columns in the table
+            $this->createTable(
+                $this->purgeRecordTableName,
+                [
+                    'id' => $this->primaryKey(),
+                    'siteId' => $this->integer()->notNull(),
                     'purgedAt' => $this->dateTime()->notNull(),
-                    'paths' => $this->string(255),
+                    'paths' => $this->text()->notNull(),
+                    'cacheGroup' => $this->string(),
+                    'dateCreated' => $this->dateTime()->notNull(),
+                    'dateUpdated' => $this->dateTime()->notNull(),
+                    'uid' => $this->uid(),
                 ]
             );
         }
@@ -91,11 +119,22 @@ class Install extends Migration
     {
         $this->createIndex(
             $this->db->getIndexName(
-                $this->tableName,
+                $this->cacheRecordTableName,
+                'id',
+                true
+            ),
+            $this->cacheRecordTableName,
+            'id',
+            true
+        );
+
+        $this->createIndex(
+            $this->db->getIndexName(
+                $this->purgeRecordTableName,
                 'purgedAt',
                 false
             ),
-            $this->tableName,
+            $this->purgeRecordTableName,
             'purgedAt',
             false
         );
@@ -108,14 +147,48 @@ class Install extends Migration
      */
     protected function addForeignKeys()
     {
+        // Add siteId foreign key to cache record table
         $this->addForeignKey(
-            $this->db->getForeignKeyName($this->tableName, 'siteId'),
-            $this->tableName,
+            $this->db->getForeignKeyName($this->cacheRecordTableName, 'siteId'),
+            $this->cacheRecordTableName,
             'siteId',
             '{{%sites}}',
             'id',
             'CASCADE',
             'CASCADE'
+        );
+
+        // Add cacheId key to cache record table
+        $this->addForeignKey(
+            $this->db->getForeignKeyName($this->cacheRecordTableName, 'cacheId'),
+            $this->cacheRecordTableName,
+            'cacheKey',
+            '{{%templatecaches}}',
+            'cacheKey',
+            'CASCADE',
+            'CASCADE'
+        );
+
+        // Add siteId foreign key to purge record table
+        $this->addForeignKey(
+            $this->db->getForeignKeyName($this->purgeRecordTableName, 'siteId'),
+            $this->purgeRecordTableName,
+            'siteId',
+            '{{%sites}}',
+            'id',
+            'CASCADE',
+            'CASCADE'
+        );
+
+        // Add siteId foreign key to purge record table
+        $this->addForeignKey(
+            $this->db->getForeignKeyName($this->purgeRecordTableName, 'id'),
+            $this->purgeRecordTableName,
+            'id',
+            '{{%elements}}',
+            'id',
+            'CASCADE',
+            null
         );
     }
 
@@ -126,6 +199,7 @@ class Install extends Migration
      */
     protected function removeTables()
     {
-        $this->dropTableIfExists($this->tableName);
+        $this->dropTableIfExists(PrestoPurgeRecord::tableName());
+        $this->dropTableIfExists(PrestoCacheItemRecord::tableName());
     }
 }

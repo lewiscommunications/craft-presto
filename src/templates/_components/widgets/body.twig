@@ -1,0 +1,12 @@
+{% do view.registerAssetBundle("lewiscom\\presto\\assetbundles\\widget\\WidgetAsset") %}
+
+Static File Count: {{ cacheCount }}
+<div class="field">
+    <div class="heading">
+        <div class="instructions">
+            Purges all static and template caches.
+        </div>
+    </div>
+    <a class="btn submit js-presto-widget-purge-btn" data-action="{{ actionUrl('presto/default/purge-cache') }}">Purge Cache</a>
+</div>
+

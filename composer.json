@@ -1,7 +1,8 @@
 {
     "name": "lewiscom/presto",
-    "description": "A static cache extension for Craft chaching",
+    "description": "A static cache plugin for Craft CMS 3.x",
     "type": "craft-plugin",
+    "version": "1.0.0",
     "keywords": [
         "craft",
         "cms",
@@ -10,8 +11,8 @@
         "presto"
     ],
     "support": {
-        "docs": "https://github.com/github.com/lewiscommunications/presto/blob/master/README.md",
-        "issues": "https://github.com/github.com/lewiscommunications/presto/issues"
+        "docs": "https://github.com/lewiscom/craft-presto/presto/blob/master/README.md",
+        "issues": "https://github.com/lewiscom/craft-presto/presto/issues"
     },
     "license": "MIT",
     "authors": [
@@ -21,7 +22,8 @@
         }
     ],
     "require": {
-        "craftcms/cms": "^3.0.0-RC1"
+        "craftcms/cms": "^3.0.0-RC1",
+        "alc/sitemap-crawler": "^1.0"
     },
     "autoload": {
         "psr-4": {
@@ -33,9 +35,10 @@
         "handle": "presto",
         "hasCpSettings": true,
         "hasCpSection": false,
-        "changelogUrl": "https://raw.githubusercontent.com/github.com/lewiscommunications/presto/master/CHANGELOG.md",
+        "changelogUrl": "https://raw.githubusercontent.com/lewiscom/craft-presto/presto/master/CHANGELOG.md",
         "components": {
-            "prestoService": "lewiscom\\presto\\services\\PrestoService"
+            "prestoService": "lewiscom\\presto\\services\\PrestoService",
+            "cacheService": "lewiscom\\presto\\services\\CacheService"
         },
         "class": "lewiscom\\presto\\Presto"
     }

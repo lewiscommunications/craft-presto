@@ -1,11 +1,23 @@
-/**
- * Presto plugin for Craft CMS
- *
- * Presto CSS
- *
- * @author    Lewis Communications
- * @copyright Copyright (c) 2018 Lewis Communications
- * @link      https://www.lewiscommunications.com
- * @package   Presto
- * @since     2.0.0
- */
+.pagination {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+ol.pagination__pages {
+    display: flex;
+    list-style-type: none;
+    padding-left: 0 !important;
+}
+
+.pagination__page {
+    padding: 15px;
+}
+
+.btn.submit {
+    margin-right: 15px;
+}
+
+.flex-grow.search {
+    margin-right: 15px;
+}

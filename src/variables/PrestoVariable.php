@@ -3,8 +3,9 @@
 namespace lewiscom\presto\variables;
 
 use Craft;
-use lewiscom\presto\Presto;
 use yii\base\Event;
+use craft\web\Application;
+use lewiscom\presto\Presto;
 
 class PrestoVariable
 {
@@ -26,7 +27,7 @@ class PrestoVariable
     /**
      * @var mixed
      */
-    public $service;
+    public $cacheService;
 
     /**
      * @var array
@@ -39,16 +40,24 @@ class PrestoVariable
     public $key;
 
     /**
+     * @var array
+     */
+    public $settings;
+
+    /**
      * PrestoVariable constructor.
-     *
-     * @throws \yii\base\InvalidConfigException
      */
     public function __construct()
     {
-        $this->host = Craft::$app->request->getServerName();
-        $this->baseUrl = Craft::$app->request->getBaseUrl();
-        $this->path = (! empty($this->baseUrl) ? ltrim($this->baseUrl, '/') . '/' : '') . Craft::$app->request->getFullPath();
-        $this->service = Presto::getInstance()->prestoService;
+        $plugin = Presto::$plugin;
+        $request = Craft::$app->request;
+
+        $this->host = $request->getServerName();
+        $this->baseUrl = $request->getBaseUrl();
+        $this->path = (! empty($this->baseUrl) ? ltrim($this->baseUrl, '/') . '/' : '')
+            . $request->getFullPath();
+        $this->cacheService = $plugin->cacheService;
+        $this->settings = $plugin->getSettings();
     }
 
     /**
@@ -73,10 +82,11 @@ class PrestoVariable
             $keySegments['group'] = $config['group'];
         }
 
-        $this->key = $this->generateKey($keySegments);
+        $this->key = $this->cacheService->generateKey($keySegments);
 
-        Craft::$app->on(
-            Craft::$app::EVENT_AFTER_REQUEST,
+        Event::on(
+            Application::class,
+            Application::EVENT_AFTER_REQUEST,
             [$this, 'handleAfterRequestEvent']
         );
 
@@ -86,55 +96,20 @@ class PrestoVariable
     /**
      * This method will check if the request is cacheable, if so we will
      * create the static html file
+     *
+     * @throws \yii\base\ErrorException
      */
     public function handleAfterRequestEvent()
     {
-        if (
-            (! isset($this->config['static']) || $this->config['static'] !== false) &&
-            $this->isCacheable()
-        ) {
-            if ($html = Craft::$app->templateCaches->getTemplateCache($this->key, true)) {
-                $this->service->writeCache(
+        if ($this->cacheService->isCacheable($this->config)) {
+            if (Craft::$app->templateCaches->getTemplateCache($this->key, true)) {
+                $this->cacheService->write([
                     $this->host,
                     $this->path,
-                    $html,
-                    $this->config
-                );
+                    $this->config,
+                    $this->key,
+                ]);
             }
         }
-    }
-
-    /**
-     * Generate cacheKey based on the host and path
-     *
-     * @param array $keySegments [
-     *		@var string $host
-     *		@var string $path
-     * 		@var string $group (optional)
-     * ]
-     * @return string
-     */
-    private function generateKey($keySegments)
-    {
-        $group = isset($keySegments['group']) ? $keySegments['group'] . '/' : '';
-        $path = $keySegments['path'] ? $keySegments['path'] : 'home';
-        $key = $keySegments['host'] . '|' . $group . $path;
-
-        return preg_replace('/\s+/', '', $key);
-    }
-
-    /**
-     * Check if request is a valid get request that is not in live
-     * preview mode
-     *
-     * @return bool
-     */
-    private function isCacheable()
-    {
-        $request = Craft::$app->request;
-
-        return http_response_code() === 200 &&
-            ! $request->isLivePreview &&
-            ! $request->isPost;
     }
 }

@@ -1,0 +1,77 @@
+{% extends 'presto/_layouts/master' %}
+{% import '_includes/forms' as forms %}
+
+{% set headers = [
+    'Site ID',
+    'Url',
+    'Group',
+    'Age',
+    'Created'
+] %}
+
+{% block content %}
+    <form method="POST" class="js-presto-purge-selected">
+        <input type="hidden" name="action" value="presto/cached-pages/purge-selected">
+        <input type="hidden" name="pluginHandle" value="presto">
+
+        {{ redirectInput('presto/cache') }}
+        {{ csrfInput() }}
+
+        <div class="buttons">
+            <input type="submit" class="btn submit js-presto-purge-submit disabled" value="Purge Selected" disabled="disabled">
+            <div class="flex-grow texticon search icon clearable">
+                <input class="text fullwidth js-presto-search-input" type="text" autocomplete="off" placeholder="Search" value="{% if search %}{{ search }}{% endif %}">
+                <div class="clear hidden" title="Clear"></div>
+            </div>
+            <a href="#" class="btn submit js-presto-search-submit">Search</a>
+        </div>
+        {% if cache|length %}
+            <div class="tableview">
+                <table class="data fullwidth">
+                    <thead>
+                    <tr>
+                        <td class="checkbox-cell">
+                            {{ forms.checkboxField({
+                                class: 'js-presto-cache-key-checkbox-all',
+                                checked: false,
+                            }) }}
+                        </td>
+                        {% for header in headers %}
+                            <th scope="col">{{ header }}</th>
+                        {% endfor %}
+                        <th scope="col" data-attribute="link" data-icon="world" title="Link"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for page in cache %}
+                        <tr data-id="{{ page.id }}">
+                            <td class="checkbox-cell">
+                                {{ forms.checkboxField({
+                                    id: 'page-' ~ page.id,
+                                    name: 'cacheKeys[]',
+                                    class: 'js-presto-cache-key-checkbox',
+                                    value: page.cacheKey,
+                                    checked: false,
+                                }) }}
+                            </td>
+                            <td data-title="" data-attr="section">{{ page.siteId }}</td>
+                            <td data-title="" data-attr="">{{ page.url }}</td>
+                            <td data-title="" data-attr="">{{ page.cacheGroup }}</td>
+                            <td data-title="" data-attr="">{{ page.age }}</td>
+                            <td data-title="" data-attr="">{{ page.dateCreated }}</td>
+                            <td data-title="Link" data-attr="link">
+                                <a href="https://{{ page.url }}" rel="noopener" target="_blank" data-icon="world" title="Visit webpage"></a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% include 'presto/_includes/pagination' with { paginate: paginate } %}
+        {% else %}
+            <h1>No cached pages</h1>
+        {% endif %}
+    </form>
+{% endblock %}
+
+

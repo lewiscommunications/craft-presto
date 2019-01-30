@@ -2,99 +2,37 @@
 
 namespace lewiscom\presto\console\controllers;
 
+
 use Craft;
-use craft\helpers\FileHelper;
-use lewiscom\presto\Presto;
+use yii\helpers\Console;
 use yii\console\Controller;
+use lewiscom\presto\Presto;
 
 class DefaultController extends Controller
 {
-    public $prestoService;
-
-    public function __construct(string $id, Presto $module, array $config = [])
-    {
-        $this->prestoService = Presto::$plugin->prestoService;
-
-        parent::__construct($id, $module, $config);
-    }
+    // TODO: Add cron
 
     /**
-     * Purge the entire cache
-     */
-    public function actionPurge()
-    {
-        $this->prestoService->purgeEntireCache();
-
-        echo "Template cache has been purged";
-    }
-
-    /**
-     * @throws \yii\base\ErrorException
-     */
-    public function actionCheck()
-    {
-        $this->prestoService->updateRootPath(
-            Presto::$plugin->settings->rootPath
-        );
-
-        // Does the purge log file exist?
-        if (! file_exists($this->getUpdatePath())) {
-            FileHelper::writeToFile($this->getUpdatePath(), '');
-        }
-
-        $lastUpdated = $this->getUpdateTime();
-        $this->writeUpdateTime();
-
-        if (! $lastUpdated) {
-            $this->prestoService->purgeEntireCache();
-        } else {
-            $lastUpdated = $this->prestoService->getDateTime($lastUpdated);
-
-            $paths = $this->prestoService->getPurgeEvents($lastUpdated);
-
-            if (count($paths)) {
-                if ($paths[0] === 'all') {
-                    $this->prestoService->purgeEntireCache();
-                } else {
-                    $this->prestoService->purgeCache($paths);
-                }
-            }
-        }
-    }
-
-    /**
-     * Returns the string value for when the check was last run
-     *
-     * @return array|bool|string
-     */
-    private function getUpdateTime()
-    {
-        return file_get_contents(
-            $this->getUpdatePath()
-        );
-    }
-
-    /**
-     * Returns the path to the file holding the last update check
-     *
-     * @return string
-     */
-    private function getUpdatePath()
-    {
-        return Craft::$app->path->getRuntimePath() . '/prestoPurgeEvents.txt';
-    }
-
-    /**
-     * Updates last update check to the current time, formatted to be equivalent to
-     * DateTimes stored in the database
+     * Clear the Craft and static template cache
      *
      * @throws \yii\base\ErrorException
      */
-    private function writeUpdateTime()
+    public function actionClearCache()
     {
-        FileHelper::writeToFile(
-            $this->getUpdatePath(),
-            $this->prestoService->getDateTime()->format('Y-m-d H:i:s')
+        Presto::$plugin->cacheService->triggerPurge(true);
+
+        echo "Cache has been purged." . PHP_EOL;
+    }
+
+    /**
+     * Warm the cache
+     */
+    public function actionWarmCache()
+    {
+        Presto::$plugin->crawlerService->crawl(
+            Craft::getAlias(Presto::$plugin->getSettings()->sitemapIndex, false)
         );
+
+        echo "Cache warming has started." . PHP_EOL;
     }
 }

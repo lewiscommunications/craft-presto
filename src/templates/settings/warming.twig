@@ -1,0 +1,49 @@
+{% extends 'presto/_layouts/master' %}
+{% import '_includes/forms' as forms %}
+
+{% set fullPageForm = true %}
+
+{% block content %}
+    <input type="hidden" name="action" value="plugins/save-plugin-settings">
+	<input type="hidden" name="pluginHandle" value="presto">
+
+    {{ redirectInput('presto/settings') }}
+    {{ csrfInput() }}
+
+    {% namespace 'settings' %}
+
+        {{ forms.autosuggestField({
+            label: 'Sitemap Index'|t('presto'),
+            instructions: 'The public path to your sitemap index'|t('presto'),
+            id: 'sitemapIndex',
+            name: 'sitemapIndex',
+            value: settings.sitemapIndex,
+            suggestions: craft.cp.getEnvSuggestions(true),
+            required: true,
+            placeholder: '@cdnUrl/sitemaps/index.xml',
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: 'Enable cache warming'|t('presto'),
+            instructions: 'Warm the cache when an entry is modified'|t('presto'),
+            id: 'warmCache',
+            name: 'warmCache',
+            on: settings.warmCache,
+            errors: settings.getErrors('warmCache'),
+        }) }}
+
+    {% endnamespace %}
+
+<hr>
+
+<div class="field">
+    <div class="heading">
+        <div class="instructions">
+            Crawl your website based on the urls in your sitemap
+        </div>
+    </div>
+    <a class="btn submit" href="{{ actionUrl('presto/default/warm-entire-cache') }}">Warm Cache</a>
+</div>
+{% endblock %}
+
+
