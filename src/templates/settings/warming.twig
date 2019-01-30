@@ -23,12 +23,13 @@
             placeholder: '@cdnUrl/sitemaps/index.xml',
         }) }}
 
-        {{ forms.checkboxField({
+        {{ forms.lightswitchField({
             label: 'Enable cache warming'|t('presto'),
             instructions: 'Warm the cache when an entry is modified'|t('presto'),
             id: 'warmCache',
             name: 'warmCache',
-            checked: settings.warmCache,
+            on: settings.warmCache,
+            errors: settings.getErrors('warmCache'),
         }) }}
 
     {% endnamespace %}

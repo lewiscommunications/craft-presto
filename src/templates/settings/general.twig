@@ -42,6 +42,15 @@
             errors: settings.getErrors('cacheWhenLoggedIn'),
         }) }}
 
+        {{ forms.lightswitchField({
+            label: 'Show in CP Nav'|t('presto'),
+            instructions: 'Display a link to this plugin in the main navigation'|t('presto'),
+            id: 'showInCpNav',
+            name: 'showInCpNav',
+            on: settings.showInCpNav,
+            errors: settings.getErrors('showInCpNav'),
+        }) }}
+
     {% endnamespace %}
 
     <hr>

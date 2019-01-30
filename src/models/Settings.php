@@ -44,9 +44,17 @@ class Settings extends Model
 
     /**
      * The location of the site map index to crawl
+     *
      * @var string
      */
     public $sitemapIndex = '@cdnUrl/sitemaps/index.xml';
+
+    /**
+     * Show in main CP navigation
+     *
+     * @var bool
+     */
+    public $showInCpNav = false;
 
     /**
      * Validation rules
@@ -64,6 +72,8 @@ class Settings extends Model
             ['purgeMethod', 'default', 'value' => 'immediate'],
             ['sitemapIndex', 'string'],
             ['sitemapIndex', 'default', 'value' => '@cdnUrl/sitemaps/index.xml'],
+            ['showInCpNav', 'boolean'],
+            ['showInCpNav', 'default', 'value' => false],
             ['cacheWhenLoggedIn', 'boolean'],
             ['purgeMethod', 'default', 'value' => false],
         ];

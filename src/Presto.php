@@ -99,6 +99,8 @@ class Presto extends Plugin
             $this->controllerNamespace = 'lewiscom\presto\console\controllers';
         }
 
+        $this->hasCpSection = Presto::$plugin->getSettings()->showInCpNav;
+
         // Set the services on the instance, so you can access them by
         // $this->{serviceName}
         $this->setComponents([
@@ -217,6 +219,7 @@ class Presto extends Plugin
             UrlManager::class,
             UrlManager::EVENT_REGISTER_CP_URL_RULES,
             function (RegisterUrlRulesEvent $event) {
+                $event->rules['presto'] = ['template' => 'presto/index'];
                 $event->rules['presto/settings/general'] = 'presto/general-settings';
                 $event->rules['presto/settings/cache-warming'] = 'presto/cache-warming-settings';
                 $event->rules['presto/cache'] = 'presto/cached-pages';
