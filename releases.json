@@ -38,5 +38,13 @@
 		"notes": [
 			"[Fixed] Fixed issue when using Presto on a per page basis alongside other cache tags causing an error."
 		]
+	},
+	{
+		"version": "0.6.4",
+		"downloadUrl": "https://github.com/lewiscommunications/craft-presto/archive/0.6.4.zip",
+		"date": "2019-02-26T18:33:11+0000",
+		"notes": [
+			"[Added] Added event when entire cache is cleared."
+		]
 	}
 ]

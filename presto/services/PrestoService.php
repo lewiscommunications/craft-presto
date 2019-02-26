@@ -138,9 +138,11 @@ class PrestoService extends BaseApplicationComponent
 		}
 	}
 
-	/**
-	 * Purge all cached files
-	 */
+    /**
+     * Purge all cached files
+     *
+     * @throws \CException
+     */
 	public function purgeEntireCache()
 	{
 		$cachePath = IOHelper::folderExists(
@@ -151,6 +153,21 @@ class PrestoService extends BaseApplicationComponent
 		if ($cachePath) {
 			IOHelper::clearFolder($cachePath);
 		}
+
+        $event = new Event($this);
+
+        $this->onPurgeEntireCache($event);
+	}
+
+    /**
+     * Raise event
+     *
+     * @param $event
+     * @throws \CException
+     */
+	public function onPurgeEntireCache($event)
+	{
+		$this->raiseEvent('onPurgeEntireCache', $event);
 	}
 
 	/**
