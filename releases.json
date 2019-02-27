@@ -46,5 +46,13 @@
 		"notes": [
 			"[Added] Added event when entire cache is cleared."
 		]
+	},
+	{
+		"version": "0.6.5",
+		"downloadUrl": "https://github.com/lewiscommunications/craft-presto/archive/0.6.5.zip",
+		"date": "2019-02-27T17:31:37+0000",
+		"notes": [
+			"[Improved] Improved events, thanks Felix!"
+		]
 	}
 ]
