@@ -108,6 +108,8 @@ class PrestoService extends BaseApplicationComponent
 	public function purgeCache($paths = [])
 	{
 		if (count($paths)) {
+			$purgedUrls = [];
+
 			foreach ($paths as $path) {
 				$url = explode('|', $path, 2);
 
@@ -134,15 +136,22 @@ class PrestoService extends BaseApplicationComponent
 				if ($targetPath) {
 					@rmdir($targetPath);
 				}
+
+				if ($targetFile || $targetPath) {
+					$purgedUrls[] = UrlHelper::getSiteUrl(str_replace('home', '', $url[1]));
+				}
 			}
+
+			$this->onPurgeCache(new Event($this, [
+				'all' => false,
+				'urls' => $purgedUrls,
+			]));
 		}
 	}
 
-    /**
-     * Purge all cached files
-     *
-     * @throws \CException
-     */
+	/**
+	 * Purge all cached files
+	 */
 	public function purgeEntireCache()
 	{
 		$cachePath = IOHelper::folderExists(
@@ -152,22 +161,12 @@ class PrestoService extends BaseApplicationComponent
 
 		if ($cachePath) {
 			IOHelper::clearFolder($cachePath);
+
+			$this->onPurgeCache(new Event($this, [
+				'all' => true,
+				'urls' => [],
+			]));
 		}
-
-        $event = new Event($this);
-
-        $this->onPurgeEntireCache($event);
-	}
-
-    /**
-     * Raise event
-     *
-     * @param $event
-     * @throws \CException
-     */
-	public function onPurgeEntireCache($event)
-	{
-		$this->raiseEvent('onPurgeEntireCache', $event);
 	}
 
 	/**
@@ -274,6 +273,17 @@ class PrestoService extends BaseApplicationComponent
 		}
 
 		return $paths;
+	}
+
+	/**
+	 * Fires an 'onPurgeCache' event.
+	 *
+	 * @param Event $event
+	 * @return null
+	 */
+	public function onPurgeCache(Event $event)
+	{
+		$this->raiseEvent('onPurgeCache', $event);
 	}
 
 	/**
