@@ -34,6 +34,11 @@ class EventHandlerService extends Component
 
         $this->settings = Presto::$plugin->getSettings();
         $this->cacheService = Presto::$plugin->cacheService;
+
+        // TODO: Should default to empty array
+        if (! $this->settings->sections) {
+            $this->settings->sections = [];
+        }
     }
 
     /**
@@ -41,7 +46,8 @@ class EventHandlerService extends Component
      */
     public function handleAfterSaveElementEvent(ElementEvent $event)
     {
-        $this->cacheService->triggerPurge();
+        $all = in_array($event->element->sectionId, $this->settings->sections);
+        $this->cacheService->triggerPurge($all);
 
         if ($this->settings->warmCache) {
             Craft::$app
@@ -90,7 +96,8 @@ class EventHandlerService extends Component
             $event->element->id
         ]);
 
-        $this->cacheService->triggerPurge();
+        $all = in_array($event->element->sectionId, $this->settings->sections);
+        $this->cacheService->triggerPurge($all);
     }
 
     /**
@@ -103,10 +110,21 @@ class EventHandlerService extends Component
         if (! $event->action->isDestructive()) {
             $this->cacheService->setCaches($event->criteria->ids());
 
-            if ($this->cacheService->hasCaches()) {
-                $this->cacheService->triggerPurge(false, $this->cacheService->caches);
+            $entries = Entry::find()->id($event->criteria->ids())->all();
+            $sectionIds = array_map(function($entry) {
+                return $entry->sectionId;
+            }, $entries);
+
+            $all = ! count(array_intersect($sectionIds, $this->settings->sections ?? []));
+
+            if ($all) {
+                $this->cacheService->triggerPurge($all);
             } else {
-                $this->cacheService->triggerPurge(true);
+                if ($this->cacheService->hasCaches()) {
+                    $this->cacheService->triggerPurge(false, $this->cacheService->caches);
+                } else {
+                    $this->cacheService->triggerPurge(true);
+                }
             }
         }
     }
@@ -122,7 +140,8 @@ class EventHandlerService extends Component
             $event->element->id
         ]);
 
-        $this->cacheService->triggerPurge();
+        $all = in_array($event->element->sectionId, $this->settings->sections);
+        $this->cacheService->triggerPurge($all);
     }
 
     /**

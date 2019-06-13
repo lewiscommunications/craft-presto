@@ -18,6 +18,7 @@
             id: 'rootPath',
             name: 'rootPath',
             value: settings.rootPath,
+            suggestEnvVars: true,
             suggestions: craft.cp.getEnvSuggestions(true),
             required: true,
             placeholder: '/path/to/folder',
@@ -29,6 +30,7 @@
             id: 'cachePath',
             name: 'cachePath',
             value: settings.cachePath,
+            suggestEnvVars: true,
             suggestions: craft.cp.getEnvSuggestions(true),
             required: true,
             placeholder: '/cache',
@@ -51,6 +53,22 @@
             errors: settings.getErrors('showInCpNav'),
         }) }}
 
+        {% set sections = craft.sections.getAllSections() %}
+        {% set sectionOptions = [] %}
+
+        {% for section in sections %}
+            {% set sectionOptions = sectionOptions|merge([{ label: section.name, value: section.id }]) %}
+        {% endfor %}
+
+        {{ forms.checkboxSelectField({
+            label: 'Sections'|t('presto'),
+            instructions: 'Clear entire cache when these sections are modified'|t('presto'),
+            name: 'sections',
+            options: sectionOptions,
+            values: settings.sections,
+            showAllOption: true,
+        }) }}
+
     {% endnamespace %}
 
     <hr>
@@ -65,5 +83,3 @@
     </div>
 
 {% endblock %}
-
-

@@ -3,6 +3,7 @@
 namespace lewiscom\presto\models;
 
 use craft\base\Model;
+use yii\behaviors\AttributeBehavior;
 
 class Settings extends Model
 {
@@ -55,6 +56,13 @@ class Settings extends Model
      * @var bool
      */
     public $showInCpNav = false;
+
+    /**
+     * Clear entire cache when these sections are updated
+     *
+     * @var array
+     */
+    public $sections = [];
 
     /**
      * Validation rules
