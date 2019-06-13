@@ -53,10 +53,9 @@
             errors: settings.getErrors('showInCpNav'),
         }) }}
 
-        {% set sections = craft.sections.getAllSections() %}
         {% set sectionOptions = [] %}
 
-        {% for section in sections %}
+        {% for section in craft.app.sections.allSections %}
             {% set sectionOptions = sectionOptions|merge([{ label: section.name, value: section.id }]) %}
         {% endfor %}
 

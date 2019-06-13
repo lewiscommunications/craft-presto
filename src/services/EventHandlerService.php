@@ -108,14 +108,22 @@ class EventHandlerService extends Component
     public function handleBeforePerformActionEvent(ElementActionEvent $event)
     {
         if (! $event->action->isDestructive()) {
-            $this->cacheService->setCaches($event->criteria->ids());
+            $ids = $event->criteria->ids();
+            $this->cacheService->setCaches($ids);
 
-            $entries = Entry::find()->id($event->criteria->ids())->all();
+            $entries = Entry::findAll([
+                'id' => $ids,
+                'status' => ['live', 'expired', 'disabled', 'pending']
+            ]);
+
             $sectionIds = array_map(function($entry) {
                 return $entry->sectionId;
             }, $entries);
 
-            $all = ! count(array_intersect($sectionIds, $this->settings->sections ?? []));
+            $all = ! count(array_intersect(
+                $sectionIds,
+                $this->settings->sections ?? []
+            ));
 
             if ($all) {
                 $this->cacheService->triggerPurge($all);
