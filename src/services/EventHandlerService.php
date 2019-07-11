@@ -92,12 +92,16 @@ class EventHandlerService extends Component
      */
     public function handleBeforeDeleteElementEvent(ElementEvent $event)
     {
+        $element = $event->element;
+
         $this->cacheService->setCaches([
-            $event->element->id
+            $element->id
         ]);
 
-        $all = in_array($event->element->sectionId, $this->settings->sections);
-        $this->cacheService->triggerPurge($all);
+        if ($element instanceof Entry && $element->sectionId) {
+            $all = in_array($element->sectionId, $this->settings->sections);
+            $this->cacheService->triggerPurge($all);
+        }
     }
 
     /**
@@ -144,12 +148,16 @@ class EventHandlerService extends Component
      */
     public function handleBeforeMoveElementEvent(MoveElementEvent $event)
     {
+        $element = $event->element;
+
         $this->cacheService->setCaches([
-            $event->element->id
+            $element->id
         ]);
 
-        $all = in_array($event->element->sectionId, $this->settings->sections);
-        $this->cacheService->triggerPurge($all);
+        if ($element instanceof Entry && $element->sectionId) {
+            $all = in_array($element->sectionId, $this->settings->sections);
+            $this->cacheService->triggerPurge($all);
+        }
     }
 
     /**
