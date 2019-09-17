@@ -47,7 +47,8 @@ class EventHandlerService extends Component
     public function handleAfterSaveElementEvent(ElementEvent $event)
     {
         if ($event->element instanceof Entry) {
-            $all = in_array($event->element->sectionId, $this->settings->sections);
+            $all = $this->settings->sections === '*' ||
+                in_array($event->element->sectionId, $this->settings->sections);
             $this->cacheService->triggerPurge($all);
 
             if ($this->settings->warmCache) {
