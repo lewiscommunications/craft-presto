@@ -102,7 +102,8 @@ class EventHandlerService extends Component
         ]);
 
         if ($element instanceof Entry && $element->sectionId) {
-            $all = in_array($element->sectionId, $this->settings->sections);
+            $all = $this->settings->sections === '*' ||
+                in_array($event->element->sectionId, $this->settings->sections);
             $this->cacheService->triggerPurge($all);
         }
     }
@@ -158,7 +159,8 @@ class EventHandlerService extends Component
         ]);
 
         if ($element instanceof Entry && $element->sectionId) {
-            $all = in_array($element->sectionId, $this->settings->sections);
+            $all = $this->settings->sections === '*' ||
+                in_array($event->element->sectionId, $this->settings->sections);
             $this->cacheService->triggerPurge($all);
         }
     }
