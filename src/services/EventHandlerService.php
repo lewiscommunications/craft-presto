@@ -46,15 +46,17 @@ class EventHandlerService extends Component
      */
     public function handleAfterSaveElementEvent(ElementEvent $event)
     {
-        $all = in_array($event->element->sectionId, $this->settings->sections);
-        $this->cacheService->triggerPurge($all);
+        if ($event->element instanceof Entry) {
+            $all = in_array($event->element->sectionId, $this->settings->sections);
+            $this->cacheService->triggerPurge($all);
 
-        if ($this->settings->warmCache) {
-            Craft::$app
-                ->getQueue()
-                ->push(new WarmCacheTask([
-                    'urls' => $this->cacheService->getUrlsFromCacheKeys(),
-                ]));
+            if ($this->settings->warmCache) {
+                Craft::$app
+                    ->getQueue()
+                    ->push(new WarmCacheTask([
+                        'urls' => $this->cacheService->getUrlsFromCacheKeys(),
+                    ]));
+            }
         }
     }
 
