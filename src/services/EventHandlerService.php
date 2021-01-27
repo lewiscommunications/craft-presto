@@ -173,12 +173,13 @@ class EventHandlerService extends Component
      */
     public function handleAfterGenerateCacheItemEvent(CacheEvent $event)
     {
-        $record = new PrestoCacheItemRecord();
-        $record->siteId = Craft::$app->sites->getCurrentSite()->id;
-        $record->cacheKey = $event->cacheKey;
-        $record->filePath = $event->filePath;
-        $record->cacheGroup = $event->config['group'] ?? null;
-        $record->url = implode('/', [$event->host, $event->path]);
-        $record->save();
+        // TODO: this method is causing errors
+        // $record = new PrestoCacheItemRecord();
+        // $record->siteId = Craft::$app->sites->getCurrentSite()->id;
+        // $record->cacheKey = $event->cacheKey;
+        // $record->filePath = $event->filePath;
+        // $record->cacheGroup = $event->config['group'] ?? null;
+        // $record->url = implode('/', [$event->host, $event->path]);
+        // $record->save();
     }
 }
