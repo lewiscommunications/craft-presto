@@ -1,6 +1,6 @@
 <?php
 
-namespace lewiscom\presto\assetbundles\Presto;
+namespace lewiscom\presto\assetbundles\presto;
 
 use Craft;
 use craft\web\AssetBundle;
